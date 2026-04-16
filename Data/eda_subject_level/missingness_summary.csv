@@ -1,0 +1,25 @@
+,n_missing,frac_missing
+SUBJECT_ID,0,0.0
+IFN-gamma,0,0.0
+IL-12p70,0,0.0
+IL-13,0,0.0
+IL-1beta,0,0.0
+IL-2,0,0.0
+IL-4,0,0.0
+IL-5,0,0.0
+IL-6,0,0.0
+TNF-alpha,0,0.0
+GM-CSF,0,0.0
+IL-18,0,0.0
+IL-10,0,0.0
+IL-17A,0,0.0
+IL-21,0,0.0
+IL-22,0,0.0
+IL-23,0,0.0
+IL-27,0,0.0
+IL-9,0,0.0
+AGE,0,0.0
+AGEGR1C,0,0.0
+RACEGRP,0,0.0
+SEXC,0,0.0
+Batch date,0,0.0
