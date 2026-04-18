@@ -1,0 +1,2 @@
+Best Parameters,CV Mean Accuracy,CV Std,Train Accuracy,Train Precision,Train Recall,Train F1-Score,Train ROC-AUC
+"{'colsample_bytree': 0.9, 'learning_rate': 0.1, 'max_depth': 7, 'n_estimators': 100, 'subsample': 0.8}",0.5840,0.0824,1.0000,1.0000,1.0000,1.0000,1.0000
