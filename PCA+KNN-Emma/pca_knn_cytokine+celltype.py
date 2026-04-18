@@ -20,7 +20,7 @@ from pathlib import Path
 # PATHS
 # ================================================================================
 BASE_DIR   = Path(__file__).resolve().parent.parent
-DATA_DIR   = BASE_DIR / "Data"
+DATA_DIR   = BASE_DIR / "Data-Emma"
 OUTPUT_DIR = BASE_DIR / "PCA+KNN-Emma" / "Outputs" / "cytokine+celltype"
 FIGURES_DIR    = OUTPUT_DIR / "figures"
 
@@ -379,6 +379,381 @@ for rank, i in enumerate(rank_cell[:10]):
     bar = "█" * int(mean_imp_cell[i] / mean_imp_cell[rank_cell[0]] * 20)
     print(f"  {rank+1:>2}. {CELL_COLS[i]:<40} "
           f"{mean_imp_cell[i]:.4f} ± {std_imp_cell[i]:.4f}  {bar}")
+print()
+
+# ================================================================================
+# SECTION 8b: SEX-BASED CYTOKINE COMPARISON
+# ================================================================================
+from scipy import stats
+
+print("=" * 65)
+print("SECTION 8b: SEX-BASED CYTOKINE COMPARISON")
+print("=" * 65)
+
+male_idx   = np.where(y == 1)[0]
+female_idx = np.where(y == 0)[0]
+
+X_cyto_log = np.log1p(X_cyto)
+
+male_means   = X_cyto_log[male_idx].mean(axis=0)
+female_means = X_cyto_log[female_idx].mean(axis=0)
+male_std     = X_cyto_log[male_idx].std(axis=0)
+female_std   = X_cyto_log[female_idx].std(axis=0)
+mean_diff    = male_means - female_means
+
+# Welch's t-test per cytokine
+pvals  = []
+tstats = []
+for i in range(len(CYTO_COLS)):
+    t, p = stats.ttest_ind(
+        X_cyto_log[male_idx, i],
+        X_cyto_log[female_idx, i],
+        equal_var=False
+    )
+    pvals.append(p)
+    tstats.append(t)
+
+sex_comparison_df = pd.DataFrame({
+    "Cytokine":        CYTO_COLS,
+    "Male_Mean":       male_means.round(4),
+    "Female_Mean":     female_means.round(4),
+    "Male_Std":        male_std.round(4),
+    "Female_Std":      female_std.round(4),
+    "Mean_Diff (M-F)": mean_diff.round(4),
+    "Abs_Diff":        np.abs(mean_diff).round(4),
+    "T_Statistic":     np.array(tstats).round(4),
+    "P_Value":         np.array(pvals).round(6),
+    "Significant":     [p < 0.05 for p in pvals],
+    "Direction":       ["↑ Male" if d > 0 else "↑ Female" for d in mean_diff],
+}).sort_values("Abs_Diff", ascending=False).reset_index(drop=True)
+
+sex_comparison_df.to_csv(OUTPUT_DIR / "cytokine_sex_comparison.csv", index=False)
+
+print("  Top 10 cytokines by male/female mean difference (log1p scale):")
+print(f"  {'Cytokine':<12} {'Male':>8} {'Female':>8} {'Diff':>8} {'p-val':>10} {'Sig':>6} {'Direction':>10}")
+print("  " + "-" * 65)
+for _, row in sex_comparison_df.head(10).iterrows():
+    sig = "✓" if row["Significant"] else ""
+    print(f"  {row['Cytokine']:<12} {row['Male_Mean']:>8.4f} {row['Female_Mean']:>8.4f} "
+          f"{row['Mean_Diff (M-F)']:>8.4f} {row['P_Value']:>10.4f} {sig:>6}  {row['Direction']:>10}")
+print()
+print(f"  Significant cytokines (p<0.05): "
+      f"{sex_comparison_df[sex_comparison_df['Significant']]['Cytokine'].tolist()}")
+print()
+
+# ---- Also run t-test on cell type proportions ----
+print("  Top 10 cell types by male/female mean difference:")
+print(f"  {'Cell Type':<45} {'Diff':>8} {'p-val':>10} {'Sig':>6}")
+print("  " + "-" * 75)
+
+cell_pvals, cell_tstats, cell_diffs = [], [], []
+for i in range(len(CELL_COLS)):
+    t, p = stats.ttest_ind(
+        X_cell[male_idx, i],
+        X_cell[female_idx, i],
+        equal_var=False
+    )
+    cell_pvals.append(p)
+    cell_tstats.append(t)
+    cell_diffs.append(X_cell[male_idx, i].mean() - X_cell[female_idx, i].mean())
+
+cell_comparison_df = pd.DataFrame({
+    "Cell_Type":       CELL_COLS,
+    "Male_Mean":       X_cell[male_idx].mean(axis=0).round(4),
+    "Female_Mean":     X_cell[female_idx].mean(axis=0).round(4),
+    "Male_Std":        X_cell[male_idx].std(axis=0).round(4),
+    "Female_Std":      X_cell[female_idx].std(axis=0).round(4),
+    "Mean_Diff (M-F)": np.array(cell_diffs).round(4),
+    "Abs_Diff":        np.abs(cell_diffs).round(4),
+    "T_Statistic":     np.array(cell_tstats).round(4),
+    "P_Value":         np.array(cell_pvals).round(6),
+    "Significant":     [p < 0.05 for p in cell_pvals],
+    "Direction":       ["↑ Male" if d > 0 else "↑ Female" for d in cell_diffs],
+}).sort_values("Abs_Diff", ascending=False).reset_index(drop=True)
+
+cell_comparison_df.to_csv(OUTPUT_DIR / "celltype_sex_comparison.csv", index=False)
+
+for _, row in cell_comparison_df.head(10).iterrows():
+    sig = "✓" if row["Significant"] else ""
+    print(f"  {row['Cell_Type']:<45} {row['Mean_Diff (M-F)']:>8.4f} "
+          f"{row['P_Value']:>10.4f} {sig:>6}  {row['Direction']}")
+print()
+print(f"  Significant cell types (p<0.05): "
+      f"{cell_comparison_df[cell_comparison_df['Significant']]['Cell_Type'].tolist()}")
+print()
+
+# ---- Plot: cytokine comparison ----
+fig_sex, ax_sex = plt.subplots(figsize=(12, 6))
+x     = np.arange(len(CYTO_COLS))
+width = 0.35
+cyto_ordered = sex_comparison_df["Cytokine"].tolist()
+
+ax_sex.bar(x - width/2,
+           sex_comparison_df["Male_Mean"],   width,
+           label="Male",   color="#6BAED6", alpha=0.85, edgecolor="white",
+           yerr=sex_comparison_df["Male_Std"],   capsize=3)
+ax_sex.bar(x + width/2,
+           sex_comparison_df["Female_Mean"], width,
+           label="Female", color="#E87D7D", alpha=0.85, edgecolor="white",
+           yerr=sex_comparison_df["Female_Std"], capsize=3)
+
+for idx, (_, row) in enumerate(sex_comparison_df.iterrows()):
+    if row["Significant"]:
+        y_pos = max(row["Male_Mean"] + row["Male_Std"],
+                    row["Female_Mean"] + row["Female_Std"]) + 0.05
+        ax_sex.text(idx, y_pos, "*", ha="center", fontsize=14,
+                    color="black", fontweight="bold")
+
+ax_sex.set_xticks(x)
+ax_sex.set_xticklabels(cyto_ordered, rotation=45, ha="right", fontsize=9)
+ax_sex.set_ylabel("Mean log1p(MFI)", fontsize=10)
+ax_sex.set_title(
+    "Cytokine Expression by Sex — sorted by largest difference\n"
+    "* = statistically significant (p < 0.05, Welch's t-test)",
+    fontsize=11, fontweight="bold"
+)
+ax_sex.legend(fontsize=10)
+ax_sex.tick_params(labelsize=9)
+plt.tight_layout()
+plt.savefig(FIGURES_DIR / "cytokine_sex_comparison.png",
+            dpi=150, bbox_inches="tight", facecolor="white")
+plt.close()
+
+# ---- Plot: top 15 cell types by difference ----
+top_cells    = cell_comparison_df.head(15)
+fig_cell, ax_cell = plt.subplots(figsize=(12, 6))
+xc    = np.arange(len(top_cells))
+ax_cell.bar(xc - width/2, top_cells["Male_Mean"],   width,
+            label="Male",   color="#6BAED6", alpha=0.85, edgecolor="white",
+            yerr=top_cells["Male_Std"],   capsize=3)
+ax_cell.bar(xc + width/2, top_cells["Female_Mean"], width,
+            label="Female", color="#E87D7D", alpha=0.85, edgecolor="white",
+            yerr=top_cells["Female_Std"], capsize=3)
+
+for idx, (_, row) in enumerate(top_cells.iterrows()):
+    if row["Significant"]:
+        y_pos = max(row["Male_Mean"] + row["Male_Std"],
+                    row["Female_Mean"] + row["Female_Std"]) + 0.001
+        ax_cell.text(idx, y_pos, "*", ha="center", fontsize=14,
+                     color="black", fontweight="bold")
+
+ax_cell.set_xticks(xc)
+ax_cell.set_xticklabels(
+    [c.replace("CT_", "").replace("_", " ") for c in top_cells["Cell_Type"]],
+    rotation=45, ha="right", fontsize=8
+)
+ax_cell.set_ylabel("Mean Proportion (%)", fontsize=10)
+ax_cell.set_title(
+    "Top 15 Cell Types by Sex Difference\n"
+    "* = statistically significant (p < 0.05, Welch's t-test)",
+    fontsize=11, fontweight="bold"
+)
+ax_cell.legend(fontsize=10)
+ax_cell.tick_params(labelsize=9)
+plt.tight_layout()
+plt.savefig(FIGURES_DIR / "celltype_sex_comparison.png",
+            dpi=150, bbox_inches="tight", facecolor="white")
+plt.close()
+print("  Figures saved: cytokine_sex_comparison.png, celltype_sex_comparison.png")
+print("  CSVs saved:    cytokine_sex_comparison.csv, celltype_sex_comparison.csv")
+print()
+
+# ================================================================================
+# SECTION 8c: SOFT CLUSTERING (FUZZY C-MEANS) vs KNN
+# ================================================================================
+print("=" * 65)
+print("SECTION 8c: SOFT CLUSTERING — FUZZY C-MEANS vs KNN")
+print("=" * 65)
+
+try:
+    import skfuzzy as fuzz
+except ImportError:
+    import subprocess, sys
+    subprocess.check_call([sys.executable, "-m", "pip", "install",
+                           "scikit-fuzzy", "--break-system-packages", "-q"])
+    import skfuzzy as fuzz
+
+# Use combined PCA matrix (cytokine PCs + cell type PCs) matching best KNN config
+X_combined_full = np.load(OUTPUT_DIR / "X_combined_pca.npy")
+
+N_CLUSTERS_OPTIONS = list(range(2, 7))
+FCM_M        = 2.0
+FCM_ERROR    = 0.005
+FCM_MAX_ITER = 1000
+
+fcm_results = {}
+print("  Running Fuzzy C-Means on combined cytokine + cell type PCA space...")
+for n_clusters in N_CLUSTERS_OPTIONS:
+    data_T = X_combined_full.T
+
+    cntr, u, _, _, _, n_iter, fpc = fuzz.cluster.cmeans(
+        data_T,
+        c=n_clusters,
+        m=FCM_M,
+        error=FCM_ERROR,
+        maxiter=FCM_MAX_ITER,
+        init=None,
+        seed=42
+    )
+
+    hard_labels    = np.argmax(u, axis=0)
+    max_membership = u.max(axis=0)
+
+    cluster_sex = {}
+    for c in range(n_clusters):
+        mask = hard_labels == c
+        if mask.sum() > 0:
+            cluster_sex[c] = int(np.round(y[mask].mean()))
+        else:
+            cluster_sex[c] = 0
+
+    y_pred_fcm = np.array([cluster_sex[c] for c in hard_labels])
+    acc_fcm    = np.mean(y_pred_fcm == y)
+    cm_fcm     = compute_confusion_matrix(y, y_pred_fcm)
+    met_fcm    = classification_metrics(cm_fcm)
+
+    fcm_results[n_clusters] = {
+        "cntr":           cntr,
+        "u":              u,
+        "hard_labels":    hard_labels,
+        "max_membership": max_membership,
+        "fpc":            fpc,
+        "cluster_sex":    cluster_sex,
+        "y_pred":         y_pred_fcm,
+        "accuracy":       acc_fcm,
+        "metrics":        met_fcm,
+        "cm":             cm_fcm,
+    }
+
+    print(f"  k={n_clusters} | FPC={fpc:.4f} | "
+          f"Acc={acc_fcm:.4f} | F1={met_fcm['F1 Score']:.4f} | "
+          f"Mean membership={max_membership.mean():.4f}")
+
+print()
+
+best_fcm_k   = max(fcm_results, key=lambda k: fcm_results[k]["accuracy"])
+best_fcm_res = fcm_results[best_fcm_k]
+
+print(f"  Best FCM config : k={best_fcm_k}")
+print(f"  Accuracy        : {best_fcm_res['accuracy']:.4f}")
+print(f"  F1 Score        : {best_fcm_res['metrics']['F1 Score']:.4f}")
+print(f"  FPC             : {best_fcm_res['fpc']:.4f}  "
+      f"(1.0=crisp, closer to 1/k={1/best_fcm_k:.2f} = fully fuzzy)")
+print()
+
+print("  COMPARISON: Fuzzy C-Means vs KNN (cytokines + cell types)")
+print(f"  {'Method':<30} {'Accuracy':>10} {'F1 Score':>10} {'Sensitivity':>12} {'Specificity':>12}")
+print("  " + "-" * 77)
+print(f"  {'KNN (full features)':<30} "
+      f"{metrics['Accuracy']:>10.4f} "
+      f"{metrics['F1 Score']:>10.4f} "
+      f"{metrics['Sensitivity']:>12.4f} "
+      f"{metrics['Specificity']:>12.4f}")
+print(f"  {'Fuzzy C-Means (k=' + str(best_fcm_k) + ')':<30} "
+      f"{best_fcm_res['accuracy']:>10.4f} "
+      f"{best_fcm_res['metrics']['F1 Score']:>10.4f} "
+      f"{best_fcm_res['metrics']['Sensitivity']:>12.4f} "
+      f"{best_fcm_res['metrics']['Specificity']:>12.4f}")
+print()
+
+winner = "KNN" if metrics["Accuracy"] >= best_fcm_res["accuracy"] else "Fuzzy C-Means"
+print(f"  → {winner} performs better for sex classification (cytokines + cell types)")
+print()
+
+comparison_rows = []
+comparison_rows.append({
+    "Method":      f"KNN (PCA={best_key[0]}/mod, K={best_key[1]})",
+    "Accuracy":    metrics["Accuracy"],
+    "F1_Score":    metrics["F1 Score"],
+    "Sensitivity": metrics["Sensitivity"],
+    "Specificity": metrics["Specificity"],
+    "Notes":       "Cross-validated, combined cytokine + cell type PCs"
+})
+for k, res in fcm_results.items():
+    comparison_rows.append({
+        "Method":      f"Fuzzy C-Means (k={k})",
+        "Accuracy":    round(res["accuracy"], 4),
+        "F1_Score":    round(res["metrics"]["F1 Score"], 4),
+        "Sensitivity": round(res["metrics"]["Sensitivity"], 4),
+        "Specificity": round(res["metrics"]["Specificity"], 4),
+        "Notes":       f"FPC={res['fpc']:.4f}, full dataset (no CV), combined PCA space"
+    })
+pd.DataFrame(comparison_rows).to_csv(
+    OUTPUT_DIR / "fcm_vs_knn_comparison.csv", index=False
+)
+print("  CSV saved: fcm_vs_knn_comparison.csv")
+print()
+
+# ---- Visualization ----
+fig_fcm, axes = plt.subplots(1, 3, figsize=(18, 5))
+fig_fcm.suptitle(
+    f"Fuzzy C-Means Analysis (best k={best_fcm_k}) vs KNN — Cytokines + Cell Types",
+    fontsize=13, fontweight="bold"
+)
+
+ax1 = axes[0]
+fpcs = [fcm_results[k]["fpc"] for k in N_CLUSTERS_OPTIONS]
+accs = [fcm_results[k]["accuracy"] for k in N_CLUSTERS_OPTIONS]
+ax1.plot(N_CLUSTERS_OPTIONS, fpcs, marker="o", color="#4A7FC1",
+         linewidth=2, markersize=7, label="FPC")
+ax1.set_xlabel("Number of Clusters (k)", fontsize=10)
+ax1.set_ylabel("Fuzzy Partition Coefficient", fontsize=10, color="#4A7FC1")
+ax1.tick_params(axis="y", labelcolor="#4A7FC1")
+ax1_twin = ax1.twinx()
+ax1_twin.plot(N_CLUSTERS_OPTIONS, accs, marker="s", color="#E87D7D",
+              linewidth=2, markersize=7, linestyle="--", label="Accuracy")
+ax1_twin.set_ylabel("Accuracy", fontsize=10, color="#E87D7D")
+ax1_twin.tick_params(axis="y", labelcolor="#E87D7D")
+ax1_twin.axhline(metrics["Accuracy"], color="gray", linestyle=":",
+                 linewidth=1.5, label=f"KNN baseline={metrics['Accuracy']:.3f}")
+ax1.set_title("FPC & Accuracy vs k", fontsize=11, fontweight="bold")
+lines1, labels1 = ax1.get_legend_handles_labels()
+lines2, labels2 = ax1_twin.get_legend_handles_labels()
+ax1.legend(lines1 + lines2, labels1 + labels2, fontsize=8)
+
+ax2 = axes[1]
+hard_labels_best = best_fcm_res["hard_labels"]
+cmap_clusters    = plt.cm.get_cmap("tab10", best_fcm_k)
+for c in range(best_fcm_k):
+    mask     = hard_labels_best == c
+    n_male   = y[mask].sum()
+    n_female = (y[mask] == 0).sum()
+    ax2.scatter(X_combined_full[mask, 0], X_combined_full[mask, 1],
+                color=cmap_clusters(c), alpha=0.7, s=40,
+                label=f"Cluster {c+1} (M:{n_male} F:{n_female})")
+ax2.set_xlabel("Cytokine PC1", fontsize=10)
+ax2.set_ylabel("Cytokine PC2", fontsize=10)
+ax2.set_title(f"FCM Clusters in Combined PCA Space (k={best_fcm_k})",
+              fontsize=11, fontweight="bold")
+ax2.legend(fontsize=8)
+ax2.tick_params(labelsize=8)
+
+ax3 = axes[2]
+u_best   = best_fcm_res["u"]
+sort_idx = np.lexsort((np.argmax(u_best, axis=0), y))
+im3 = ax3.imshow(u_best[:, sort_idx], aspect="auto", cmap="YlOrRd",
+                 vmin=0, vmax=1)
+ax3.set_xlabel("Samples (sorted by sex then cluster)", fontsize=9)
+ax3.set_ylabel("Cluster", fontsize=10)
+ax3.set_yticks(range(best_fcm_k))
+ax3.set_yticklabels([f"Cluster {c+1}" for c in range(best_fcm_k)], fontsize=9)
+ax3.set_title("Membership Matrix\n(brighter = stronger membership)",
+              fontsize=11, fontweight="bold")
+n_female_sorted = (y[sort_idx] == 0).sum()
+ax3.axvline(n_female_sorted - 0.5, color="blue", linewidth=2,
+            linestyle="--", label="Sex boundary")
+ax3.text(n_female_sorted / 2, -0.7, "Female", ha="center",
+         fontsize=9, color="blue")
+ax3.text(n_female_sorted + (len(y) - n_female_sorted) / 2, -0.7,
+         "Male", ha="center", fontsize=9, color="blue")
+plt.colorbar(im3, ax=ax3, label="Membership degree")
+ax3.legend(fontsize=8, loc="upper right")
+
+plt.tight_layout()
+plt.savefig(FIGURES_DIR / "fcm_vs_knn_analysis.png",
+            dpi=150, bbox_inches="tight", facecolor="white")
+plt.close()
+print("  Figure saved: fcm_vs_knn_analysis.png")
 print()
 
 # ================================================================================

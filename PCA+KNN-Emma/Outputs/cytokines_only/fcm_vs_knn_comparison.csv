@@ -1,0 +1,7 @@
+Method,Accuracy,F1_Score,Sensitivity,Specificity,Notes
+"KNN (PCA=4, K=7)",0.568,0.5909,0.619,0.5161,Cross-validated
+Fuzzy C-Means (k=2),0.528,0.674,0.9683,0.0806,"FPC=0.9331, full dataset (no CV)"
+Fuzzy C-Means (k=3),0.56,0.4211,0.3175,0.8065,"FPC=0.7613, full dataset (no CV)"
+Fuzzy C-Means (k=4),0.544,0.2597,0.1587,0.9355,"FPC=0.6430, full dataset (no CV)"
+Fuzzy C-Means (k=5),0.552,0.2821,0.1746,0.9355,"FPC=0.6463, full dataset (no CV)"
+Fuzzy C-Means (k=6),0.576,0.5138,0.4444,0.7097,"FPC=0.6309, full dataset (no CV)"
