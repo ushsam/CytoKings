@@ -250,7 +250,7 @@ all_x = X_global_pca[:, 0]
 all_y_pca = X_global_pca[:, 1]
 ax_p.set_xlim(all_x.mean() - 3*all_x.std(), all_x.mean() + 3*all_x.std())
 ax_p.set_ylim(all_y_pca.mean() - 3*all_y_pca.std(),
-              all_y_pca.mean() + 3*all_y_pca.std())
+             all_y_pca.mean() + 3*all_y_pca.std())
 
 ax_p.set_xlabel(f"PC1 ({explained_ratio_global[0]*100:.1f}%) — Global Inflammation",
                 fontsize=9)
@@ -278,9 +278,6 @@ plt.colorbar(im_l, ax=ax_l, label="Loading value")
 plt.tight_layout()
 plt.savefig(FIGURES_DIR / "global_pca.png",
             dpi=150, bbox_inches="tight", facecolor="white")
-plt.close()
-print("  Figure saved: global_pca.png (standalone)")
-print()
 plt.close()
 print("  Figure saved: global_pca.png")
 print("  CSV saved:    pca_loadings_global.csv")
@@ -555,201 +552,222 @@ except ImportError:
                            "scikit-fuzzy", "--break-system-packages", "-q"])
     import skfuzzy as fuzz
 
-# Use the same standardized + PCA-reduced data as the best KNN config
-# Re-derive X_pca_full using best config on full standardized dataset
+# ---- Run FCM on global PCA space (log1p transformed, exploratory) ----
+# and also on CV-best PCA space (for comparison with KNN)
+
+# Global PCA space — uses X_global_pca from Section 3
+# CV best PCA space — re-derive using best KNN config
 X_proc_mean_sc = X_raw.mean(axis=0)
 X_proc_std_sc  = X_raw.std(axis=0);  X_proc_std_sc[X_proc_std_sc == 0] = 1
 X_sc_full      = (X_raw - X_proc_mean_sc) / X_proc_std_sc
 comp_fcm, _, mean_fcm = pca_fit(X_sc_full, best_key[0])
 X_pca_full     = pca_transform(X_sc_full, mean_fcm, comp_fcm)
 
-# ---- Fuzzy C-Means across k=2..6 clusters ----
 N_CLUSTERS_OPTIONS = list(range(2, 7))
-FCM_M = 2.0        # fuzziness exponent (2 is standard)
-FCM_ERROR = 0.005
+FCM_M        = 2.0
+FCM_ERROR    = 0.005
 FCM_MAX_ITER = 1000
 
-fcm_results = {}
-print("  Running Fuzzy C-Means across cluster counts...")
-for n_clusters in N_CLUSTERS_OPTIONS:
-    # skfuzzy expects features x samples (transpose)
-    data_T = X_pca_full.T
+def run_fcm(X_pca, label):
+    """Run fuzzy c-means across k=2..6 on given PCA space."""
+    results = {}
+    print(f"  Running Fuzzy C-Means on {label} space...")
+    for n_clusters in N_CLUSTERS_OPTIONS:
+        cntr, u, _, _, _, n_iter, fpc = fuzz.cluster.cmeans(
+            X_pca.T,
+            c=n_clusters,
+            m=FCM_M,
+            error=FCM_ERROR,
+            maxiter=FCM_MAX_ITER,
+            init=None,
+            seed=42
+        )
+        hard_labels    = np.argmax(u, axis=0)
+        max_membership = u.max(axis=0)
 
-    cntr, u, _, _, _, n_iter, fpc = fuzz.cluster.cmeans(
-        data_T,
-        c=n_clusters,
-        m=FCM_M,
-        error=FCM_ERROR,
-        maxiter=FCM_MAX_ITER,
-        init=None,
-        seed=42
-    )
+        cluster_sex = {}
+        for c in range(n_clusters):
+            mask = hard_labels == c
+            cluster_sex[c] = int(np.round(y[mask].mean())) if mask.sum() > 0 else 0
 
-    # Hard assignment = argmax of membership matrix
-    hard_labels = np.argmax(u, axis=0)
+        y_pred_fcm = np.array([cluster_sex[c] for c in hard_labels])
+        acc_fcm    = np.mean(y_pred_fcm == y)
+        cm_fcm     = compute_confusion_matrix(y, y_pred_fcm)
+        met_fcm    = classification_metrics(cm_fcm)
 
-    # Max membership per sample = confidence (higher = crisper clusters)
-    max_membership = u.max(axis=0)
+        results[n_clusters] = {
+            "cntr": cntr, "u": u, "hard_labels": hard_labels,
+            "max_membership": max_membership, "fpc": fpc,
+            "cluster_sex": cluster_sex, "y_pred": y_pred_fcm,
+            "accuracy": acc_fcm, "metrics": met_fcm, "cm": cm_fcm,
+        }
+        print(f"    k={n_clusters} | FPC={fpc:.4f} | "
+              f"Acc={acc_fcm:.4f} | F1={met_fcm['F1 Score']:.4f} | "
+              f"Mean membership={max_membership.mean():.4f}")
+    print()
+    return results
 
-    # Use hard labels to evaluate sex prediction accuracy
-    # For each cluster, find the majority sex label
-    cluster_sex = {}
-    for c in range(n_clusters):
-        mask = hard_labels == c
-        if mask.sum() > 0:
-            cluster_sex[c] = int(np.round(y[mask].mean()))
-        else:
-            cluster_sex[c] = 0
+# Run on both spaces
+fcm_results_global = run_fcm(X_global_pca[:, :2], "Global PCA (log1p)")
+fcm_results_cv     = run_fcm(X_pca_full,           "CV-best PCA")
 
-    y_pred_fcm = np.array([cluster_sex[c] for c in hard_labels])
-    acc_fcm    = np.mean(y_pred_fcm == y)
-    cm_fcm     = compute_confusion_matrix(y, y_pred_fcm)
-    met_fcm    = classification_metrics(cm_fcm)
+# Best configs
+best_fcm_k_global = max(fcm_results_global,
+                         key=lambda k: fcm_results_global[k]["accuracy"])
+best_fcm_k_cv     = max(fcm_results_cv,
+                         key=lambda k: fcm_results_cv[k]["accuracy"])
+best_fcm_global   = fcm_results_global[best_fcm_k_global]
+best_fcm_cv       = fcm_results_cv[best_fcm_k_cv]
 
-    fcm_results[n_clusters] = {
-        "cntr":           cntr,
-        "u":              u,
-        "hard_labels":    hard_labels,
-        "max_membership": max_membership,
-        "fpc":            fpc,
-        "cluster_sex":    cluster_sex,
-        "y_pred":         y_pred_fcm,
-        "accuracy":       acc_fcm,
-        "metrics":        met_fcm,
-        "cm":             cm_fcm,
-    }
-
-    print(f"  k={n_clusters} | FPC={fpc:.4f} | "
-          f"Acc={acc_fcm:.4f} | F1={met_fcm['F1 Score']:.4f} | "
-          f"Mean membership={max_membership.mean():.4f}")
-
+print(f"  Best FCM (global PCA) : k={best_fcm_k_global} | "
+      f"Acc={best_fcm_global['accuracy']:.4f} | "
+      f"FPC={best_fcm_global['fpc']:.4f}")
+print(f"  Best FCM (CV PCA)     : k={best_fcm_k_cv} | "
+      f"Acc={best_fcm_cv['accuracy']:.4f} | "
+      f"FPC={best_fcm_cv['fpc']:.4f}")
 print()
 
-# ---- Find best FCM config ----
-best_fcm_k   = max(fcm_results, key=lambda k: fcm_results[k]["accuracy"])
-best_fcm_res = fcm_results[best_fcm_k]
-
-print(f"  Best FCM config : k={best_fcm_k}")
-print(f"  Accuracy        : {best_fcm_res['accuracy']:.4f}")
-print(f"  F1 Score        : {best_fcm_res['metrics']['F1 Score']:.4f}")
-print(f"  FPC             : {best_fcm_res['fpc']:.4f}  "
-      f"(1.0=crisp, closer to 1/k={1/best_fcm_k:.2f} = fully fuzzy)")
-print()
-
-# ---- Compare FCM vs KNN ----
+# ---- Comparison table ----
 print("  COMPARISON: Fuzzy C-Means vs KNN")
-print(f"  {'Method':<25} {'Accuracy':>10} {'F1 Score':>10} {'Sensitivity':>12} {'Specificity':>12}")
-print("  " + "-" * 72)
-print(f"  {'KNN (cytokines only)':<25} "
-      f"{metrics['Accuracy']:>10.4f} "
-      f"{metrics['F1 Score']:>10.4f} "
-      f"{metrics['Sensitivity']:>12.4f} "
-      f"{metrics['Specificity']:>12.4f}")
-print(f"  {'Fuzzy C-Means (k=' + str(best_fcm_k) + ')':<25} "
-      f"{best_fcm_res['accuracy']:>10.4f} "
-      f"{best_fcm_res['metrics']['F1 Score']:>10.4f} "
-      f"{best_fcm_res['metrics']['Sensitivity']:>12.4f} "
-      f"{best_fcm_res['metrics']['Specificity']:>12.4f}")
+print(f"  {'Method':<35} {'Accuracy':>10} {'F1 Score':>10} "
+      f"{'Sensitivity':>12} {'Specificity':>12}")
+print("  " + "-" * 82)
+print(f"  {'KNN (cytokines only)':<35} "
+      f"{metrics['Accuracy']:>10.4f} {metrics['F1 Score']:>10.4f} "
+      f"{metrics['Sensitivity']:>12.4f} {metrics['Specificity']:>12.4f}")
+print(f"  {'FCM — Global PCA (k=' + str(best_fcm_k_global) + ')':<35} "
+      f"{best_fcm_global['accuracy']:>10.4f} "
+      f"{best_fcm_global['metrics']['F1 Score']:>10.4f} "
+      f"{best_fcm_global['metrics']['Sensitivity']:>12.4f} "
+      f"{best_fcm_global['metrics']['Specificity']:>12.4f}")
+print(f"  {'FCM — CV PCA (k=' + str(best_fcm_k_cv) + ')':<35} "
+      f"{best_fcm_cv['accuracy']:>10.4f} "
+      f"{best_fcm_cv['metrics']['F1 Score']:>10.4f} "
+      f"{best_fcm_cv['metrics']['Sensitivity']:>12.4f} "
+      f"{best_fcm_cv['metrics']['Specificity']:>12.4f}")
 print()
 
-winner = "KNN" if metrics["Accuracy"] >= best_fcm_res["accuracy"] else "Fuzzy C-Means"
-print(f"  → {winner} performs better for sex classification on cytokines only")
+best_overall = max(
+    [("KNN", metrics["Accuracy"]),
+     (f"FCM Global k={best_fcm_k_global}", best_fcm_global["accuracy"]),
+     (f"FCM CV k={best_fcm_k_cv}",         best_fcm_cv["accuracy"])],
+    key=lambda x: x[1]
+)
+print(f"  → Best overall: {best_overall[0]} (Acc={best_overall[1]:.4f})")
 print()
 
 # ---- Save comparison CSV ----
-comparison_rows = []
-comparison_rows.append({
-    "Method":      f"KNN (PCA={best_key[0]}, K={best_key[1]})",
-    "Accuracy":    metrics["Accuracy"],
-    "F1_Score":    metrics["F1 Score"],
-    "Sensitivity": metrics["Sensitivity"],
-    "Specificity": metrics["Specificity"],
-    "Notes":       "Cross-validated"
-})
-for k, res in fcm_results.items():
-    comparison_rows.append({
-        "Method":      f"Fuzzy C-Means (k={k})",
-        "Accuracy":    round(res["accuracy"], 4),
-        "F1_Score":    round(res["metrics"]["F1 Score"], 4),
-        "Sensitivity": round(res["metrics"]["Sensitivity"], 4),
-        "Specificity": round(res["metrics"]["Specificity"], 4),
-        "Notes":       f"FPC={res['fpc']:.4f}, full dataset (no CV)"
-    })
+comparison_rows = [
+    {
+        "Method":      f"KNN (PCA={best_key[0]}, K={best_key[1]})",
+        "Accuracy":    metrics["Accuracy"],
+        "F1_Score":    metrics["F1 Score"],
+        "Sensitivity": metrics["Sensitivity"],
+        "Specificity": metrics["Specificity"],
+        "Notes":       "Cross-validated"
+    }
+]
+for label, fcm_res_dict in [("Global_PCA", fcm_results_global),
+                              ("CV_PCA",     fcm_results_cv)]:
+    for k, res in fcm_res_dict.items():
+        comparison_rows.append({
+            "Method":      f"FCM_{label}_k{k}",
+            "Accuracy":    round(res["accuracy"], 4),
+            "F1_Score":    round(res["metrics"]["F1 Score"], 4),
+            "Sensitivity": round(res["metrics"]["Sensitivity"], 4),
+            "Specificity": round(res["metrics"]["Specificity"], 4),
+            "Notes":       f"FPC={res['fpc']:.4f}, full dataset (no CV), {label}"
+        })
 pd.DataFrame(comparison_rows).to_csv(
     OUTPUT_DIR / "fcm_vs_knn_comparison.csv", index=False
 )
 print("  CSV saved: fcm_vs_knn_comparison.csv")
 print()
 
-# ---- Visualization ----
-fig_fcm, axes = plt.subplots(1, 3, figsize=(18, 5))
+# ---- Visualization: 2x3 grid ----
+# Row 1: Global PCA results
+# Row 2: CV PCA results
+fig_fcm, axes = plt.subplots(2, 3, figsize=(18, 10))
 fig_fcm.suptitle(
-    f"Fuzzy C-Means Analysis (best k={best_fcm_k}) vs KNN",
+    "Fuzzy C-Means Analysis — Global PCA vs CV PCA Space",
     fontsize=13, fontweight="bold"
 )
 
-# Plot 1: FPC across k values
-ax1 = axes[0]
-fpcs = [fcm_results[k]["fpc"] for k in N_CLUSTERS_OPTIONS]
-accs = [fcm_results[k]["accuracy"] for k in N_CLUSTERS_OPTIONS]
-ax1.plot(N_CLUSTERS_OPTIONS, fpcs, marker="o", color="#4A7FC1",
-         linewidth=2, markersize=7, label="FPC")
-ax1.set_xlabel("Number of Clusters (k)", fontsize=10)
-ax1.set_ylabel("Fuzzy Partition Coefficient", fontsize=10, color="#4A7FC1")
-ax1.tick_params(axis="y", labelcolor="#4A7FC1")
-ax1_twin = ax1.twinx()
-ax1_twin.plot(N_CLUSTERS_OPTIONS, accs, marker="s", color="#E87D7D",
-              linewidth=2, markersize=7, linestyle="--", label="Accuracy")
-ax1_twin.set_ylabel("Accuracy", fontsize=10, color="#E87D7D")
-ax1_twin.tick_params(axis="y", labelcolor="#E87D7D")
-ax1_twin.axhline(metrics["Accuracy"], color="gray", linestyle=":",
-                 linewidth=1.5, label=f"KNN baseline={metrics['Accuracy']:.3f}")
-ax1.set_title("FPC & Accuracy vs k", fontsize=11, fontweight="bold")
-lines1, labels1 = ax1.get_legend_handles_labels()
-lines2, labels2 = ax1_twin.get_legend_handles_labels()
-ax1.legend(lines1 + lines2, labels1 + labels2, fontsize=8)
+def plot_fcm_row(axes_row, fcm_res_dict, best_k, X_pca, row_label):
+    fpcs = [fcm_res_dict[k]["fpc"]      for k in N_CLUSTERS_OPTIONS]
+    accs = [fcm_res_dict[k]["accuracy"] for k in N_CLUSTERS_OPTIONS]
 
-# Plot 2: PCA scatter colored by FCM hard cluster labels
-ax2 = axes[1]
-hard_labels_best = best_fcm_res["hard_labels"]
-cmap_clusters    = plt.cm.get_cmap("tab10", best_fcm_k)
-for c in range(best_fcm_k):
-    mask = hard_labels_best == c
-    n_male   = y[mask].sum()
-    n_female = (y[mask] == 0).sum()
-    ax2.scatter(X_pca_full[mask, 0], X_pca_full[mask, 1],
-                color=cmap_clusters(c), alpha=0.7, s=40,
-                label=f"Cluster {c+1} (M:{n_male} F:{n_female})")
-ax2.set_xlabel("PC1", fontsize=10)
-ax2.set_ylabel("PC2", fontsize=10)
-ax2.set_title(f"FCM Clusters in PCA Space (k={best_fcm_k})",
-              fontsize=11, fontweight="bold")
-ax2.legend(fontsize=8)
-ax2.tick_params(labelsize=8)
+    # Plot 1: FPC & accuracy vs k
+    ax1      = axes_row[0]
+    ax1_twin = ax1.twinx()
+    ax1.plot(N_CLUSTERS_OPTIONS, fpcs, marker="o", color="#4A7FC1",
+             linewidth=2, markersize=7, label="FPC")
+    ax1_twin.plot(N_CLUSTERS_OPTIONS, accs, marker="s", color="#E87D7D",
+                  linewidth=2, markersize=7, linestyle="--", label="Accuracy")
+    ax1_twin.axhline(metrics["Accuracy"], color="gray", linestyle=":",
+                     linewidth=1.5, label=f"KNN={metrics['Accuracy']:.3f}")
+    ax1.set_xlabel("Number of Clusters (k)", fontsize=9)
+    ax1.set_ylabel("FPC", fontsize=9, color="#4A7FC1")
+    ax1.tick_params(axis="y", labelcolor="#4A7FC1", labelsize=8)
+    ax1_twin.set_ylabel("Accuracy", fontsize=9, color="#E87D7D")
+    ax1_twin.tick_params(axis="y", labelcolor="#E87D7D", labelsize=8)
+    ax1.set_title(f"{row_label}\nFPC & Accuracy vs k",
+                  fontsize=10, fontweight="bold")
+    lines1, labs1 = ax1.get_legend_handles_labels()
+    lines2, labs2 = ax1_twin.get_legend_handles_labels()
+    ax1.legend(lines1 + lines2, labs1 + labs2, fontsize=7)
 
-# Plot 3: Membership heatmap (samples x clusters) for best k
-ax3 = axes[2]
-u_best = best_fcm_res["u"]
-# sort samples by sex then by dominant cluster for readability
-sort_idx = np.lexsort((np.argmax(u_best, axis=0), y))
-im3 = ax3.imshow(u_best[:, sort_idx], aspect="auto", cmap="YlOrRd",
-                 vmin=0, vmax=1)
-ax3.set_xlabel("Samples (sorted by sex then cluster)", fontsize=9)
-ax3.set_ylabel("Cluster", fontsize=10)
-ax3.set_yticks(range(best_fcm_k))
-ax3.set_yticklabels([f"Cluster {c+1}" for c in range(best_fcm_k)], fontsize=9)
-ax3.set_title("Membership Matrix\n(brighter = stronger membership)",
-              fontsize=11, fontweight="bold")
-# Add sex divider line
-n_female_sorted = (y[sort_idx] == 0).sum()
-ax3.axvline(n_female_sorted - 0.5, color="blue", linewidth=2,
-            linestyle="--", label="Sex boundary")
-ax3.text(n_female_sorted / 2, -0.7, "Female", ha="center",
-         fontsize=9, color="blue")
-ax3.text(n_female_sorted + (len(y) - n_female_sorted) / 2, -0.7,
-         "Male", ha="center", fontsize=9, color="blue")
-plt.colorbar(im3, ax=ax3, label="Membership degree")
-ax3.legend(fontsize=8, loc="upper right")
+    # Plot 2: PCA scatter colored by FCM clusters
+    ax2               = axes_row[1]
+    best_res          = fcm_res_dict[best_k]
+    hard_labels_best  = best_res["hard_labels"]
+    cmap_c            = plt.cm.get_cmap("tab10", best_k)
+    for c in range(best_k):
+        mask     = hard_labels_best == c
+        n_male   = y[mask].sum()
+        n_female = (y[mask] == 0).sum()
+        ax2.scatter(X_pca[mask, 0], X_pca[mask, 1],
+                    color=cmap_c(c), alpha=0.7, s=40,
+                    label=f"C{c+1} (M:{n_male} F:{n_female})")
+    # clip outliers
+    ax2.set_xlim(X_pca[:, 0].mean() - 3*X_pca[:, 0].std(),
+                 X_pca[:, 0].mean() + 3*X_pca[:, 0].std())
+    ax2.set_ylim(X_pca[:, 1].mean() - 3*X_pca[:, 1].std(),
+                 X_pca[:, 1].mean() + 3*X_pca[:, 1].std())
+    ax2.set_xlabel("PC1", fontsize=9)
+    ax2.set_ylabel("PC2", fontsize=9)
+    ax2.set_title(f"FCM Clusters (k={best_k})", fontsize=10, fontweight="bold")
+    ax2.legend(fontsize=7)
+    ax2.tick_params(labelsize=8)
+
+    # Plot 3: Membership heatmap
+    ax3      = axes_row[2]
+    u_best   = best_res["u"]
+    sort_idx = np.lexsort((np.argmax(u_best, axis=0), y))
+    im3      = ax3.imshow(u_best[:, sort_idx], aspect="auto",
+                          cmap="YlOrRd", vmin=0, vmax=1)
+    ax3.set_xlabel("Samples (sorted by sex then cluster)", fontsize=8)
+    ax3.set_ylabel("Cluster", fontsize=9)
+    ax3.set_yticks(range(best_k))
+    ax3.set_yticklabels([f"C{c+1}" for c in range(best_k)], fontsize=8)
+    ax3.set_title("Membership Matrix\n(brighter = stronger)",
+                  fontsize=10, fontweight="bold")
+    n_female_sorted = (y[sort_idx] == 0).sum()
+    ax3.axvline(n_female_sorted - 0.5, color="blue", linewidth=2,
+                linestyle="--")
+    ax3.text(n_female_sorted / 2, -0.7, "F", ha="center",
+             fontsize=8, color="blue")
+    ax3.text(n_female_sorted + (len(y)-n_female_sorted)/2, -0.7,
+             "M", ha="center", fontsize=8, color="blue")
+    plt.colorbar(im3, ax=ax3, label="Membership")
+
+# Row 1: global PCA
+plot_fcm_row(axes[0], fcm_results_global, best_fcm_k_global,
+             X_global_pca[:, :2], "Global PCA (log1p)")
+
+# Row 2: CV-best PCA
+plot_fcm_row(axes[1], fcm_results_cv, best_fcm_k_cv,
+             X_pca_full, "CV-Best PCA")
 
 plt.tight_layout()
 plt.savefig(FIGURES_DIR / "fcm_vs_knn_analysis.png",
@@ -757,7 +775,6 @@ plt.savefig(FIGURES_DIR / "fcm_vs_knn_analysis.png",
 plt.close()
 print("  Figure saved: fcm_vs_knn_analysis.png")
 print()
-
 
 # ================================================================================
 # SECTION 9: VISUALIZATION PANEL
@@ -876,12 +893,12 @@ for sex_label, sex_val, color in [("Female", 0, COLOR_FEMALE),
                  c=color, alpha=0.7, s=40, label=sex_label)
 
 # Clip axes to exclude outliers
-all_x_d = X_global_pca[:, 0]
-all_y_d = X_global_pca[:, 1]
-ax_d.set_xlim(all_x_d.mean() - 3*all_x_d.std(),
-              all_x_d.mean() + 3*all_x_d.std())
-ax_d.set_ylim(all_y_d.mean() - 3*all_y_d.std(),
-              all_y_d.mean() + 3*all_y_d.std())
+#all_x_d = X_global_pca[:, 0]
+#all_y_d = X_global_pca[:, 1]
+#ax_d.set_xlim(all_x_d.mean() - 3*all_x_d.std(),
+ #             all_x_d.mean() + 3*all_x_d.std())
+#ax_d.set_ylim(all_y_d.mean() - 3*all_y_d.std(),
+        #      all_y_d.mean() + 3*all_y_d.std())
 
 ax_d.set_xlabel(
     f"PC1 ({explained_ratio_global[0]*100:.1f}%) — Global Inflammation",
