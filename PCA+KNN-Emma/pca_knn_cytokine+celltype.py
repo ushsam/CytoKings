@@ -6,7 +6,7 @@ Approach:
   - Run two SEPARATE PCAs: one on cytokines, one on cell types
   - Concatenate top N PCs from each → combined matrix
   - This prevents cell types (59 features) from dominating by count
-Outputs → PCA+KNN/Outputs/full_features/
+Outputs → PCA+KNN-Emma/Outputs/cytokine+celltype/
 ================================================================================
 """
 
@@ -21,7 +21,7 @@ from pathlib import Path
 # ================================================================================
 BASE_DIR   = Path(__file__).resolve().parent.parent
 DATA_DIR   = BASE_DIR / "Data"
-OUTPUT_DIR = BASE_DIR / "PCA+KNN-Emma" / "Outputs" / "full_features"
+OUTPUT_DIR = BASE_DIR / "PCA+KNN-Emma" / "Outputs" / "cytokine+celltype"
 FIGURES_DIR    = OUTPUT_DIR / "figures"
 
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
