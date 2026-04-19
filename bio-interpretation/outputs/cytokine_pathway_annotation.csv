@@ -1,0 +1,29 @@
+Cytokine,Pathway
+IL-21,"Tfh/Th17 → B cell differentiation, germinal center
+★ Top sex + age cytokine"
+IL-22,"Th17/NK → Mucosal barrier, tissue repair
+★ Top sex cytokine (LogReg)"
+IL-4,"Th2 → B cell class switching, IgE
+Important for both sex + age"
+IL-17A,"Th17 → Mucosal immunity, neutrophil recruitment"
+GM-CSF,"T cells/Macrophages → Myeloid differentiation
+Important for both"
+IL-13,"Th2 → Allergic inflammation, IgE"
+IL-1beta,"Macrophages/DCs → Innate inflammation, inflammaging
+★ Top age cytokine (LogReg)"
+IFN-gamma,"Th1/NK → Antiviral, macrophage activation"
+IL-18,"Macrophages/DCs → IFN-gamma induction, innate
+Top age cytokine (XGBoost)"
+IL-10,"Tregs/Macrophages → Anti-inflammatory regulation
+Top age cytokine (XGBoost)"
+IL-6,"Macrophages/DCs → Acute phase, Th17 differentiation
+Top age cytokine (XGBoost)"
+IL-9,"Th9/Mast cells → Allergic, mast cell activation
+Important for both"
+IL-2,"T cells → Proliferation, Treg maintenance
+Important for both"
+IL-5,Th2/Mast cells → Eosinophil activation
+TNF-alpha,"Macrophages/T cells → Pro-inflammatory, apoptosis"
+IL-12p70,DCs/Macrophages → Th1 polarization
+IL-23,DCs → Th17 maintenance
+IL-27,"DCs/Macrophages → Th1 regulation, anti-inflammatory"
