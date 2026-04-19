@@ -18,11 +18,10 @@ from pathlib import Path
 # PATHS
 # ================================================================================
 BASE_DIR    = Path(__file__).resolve().parent.parent
-DATA_DIR    = BASE_DIR / "Data-Emma"
-OUTPUT_DIR  = BASE_DIR / "PCA+KNN-Emma" / "Outputs" / "cytokines-fixed"
-FIGURES_DIR = OUTPUT_DIR / "figures"
+PCA_DIR     = BASE_DIR / "PCA+KNN-Emma" / "Outputs" / "cytokines_only"
+AGE_DIR     = BASE_DIR / "XGBoost" / "cytokine-only" / "age" / "Outputs" / "binary_age"
+OUTPUT_DIR  = BASE_DIR / "XGBoost" / "cytokine-only" / "feature_importance_summary"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-FIGURES_DIR.mkdir(parents=True, exist_ok=True)
 
 # ================================================================================
 # SECTION 1: DATA LOADING
