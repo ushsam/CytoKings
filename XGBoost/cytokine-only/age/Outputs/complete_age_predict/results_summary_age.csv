@@ -1,0 +1,10 @@
+Metric,Value
+Best Model,XGBoost
+Accuracy (CV),0.2528 ± 0.0798
+F1-Score (CV),0.2343 ± 0.0786
+Precision (CV),0.2853
+Recall (CV),0.2775
+Target Variable,AGEGR1C
+Input Features,12 selected cytokines
+Sample Size,125
+Number of Classes,4
