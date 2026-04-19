@@ -17,7 +17,7 @@ BASE_DIR   = Path(__file__).resolve().parent.parent
 DATA_DIR   = BASE_DIR / "Data"
 PCA_DIR    = BASE_DIR / "PCA+KNN-Emma" / "Outputs" / "cytokines_only"
 OUTPUT_DIR = BASE_DIR / "bio-interpretation" / "outputs" / "figures"
-BIO_DIR = BASE_DIR / "bio-interpretation" / "outputs"
+BIO_DIR    = BASE_DIR / "bio-interpretation" / "outputs"
 BIO_DIR.mkdir(parents=True, exist_ok=True)
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -36,11 +36,13 @@ X_raw = df[CYTO_COLS].values.astype(float)
 X_log = np.log1p(X_raw)
 y     = (df["SEXC"] == "Male").astype(int).values
 
-# Top cytokines from your feature importance analysis
-TOP_CYTOKINES = [
-    "IL-5", "GM-CSF", "IL-4", "IL-17A", "IL-21",
-    "IL-22", "IL-13", "IL-1beta", "IFN-gamma", "IL-18"
-]
+feat_imp = pd.read_csv(BASE_DIR / "XGBoost" / "cytokine-only" / 
+                        "feature_importance_summary" / 
+                        "feature_importance_comparison.csv")
+
+# Top 10 by combined sex + age importance
+TOP_CYTOKINES = feat_imp.nlargest(10, "Combined")["Feature"].tolist()
+print(f"Top cytokines (combined): {TOP_CYTOKINES}")
 
 # Immune pathway annotation per cytokine
 PATHWAY_ANNOTATION = {
@@ -68,12 +70,11 @@ PATHWAY_ANNOTATION = {
 pd.DataFrame([
     {"Cytokine": cyto, "Pathway": pathway}
     for cyto, pathway in PATHWAY_ANNOTATION.items()
-]).to_csv(BIO_DIR / "cytokine_pathway_annotation.png", index=False)
+]).to_csv(BIO_DIR / "cytokine_pathway_annotation.csv", index=False)
 print(f"✓ Saved: cytokine_pathway_annotation.csv → {BIO_DIR}")
 
 # ============================================================================
 # SOFT CLUSTER ASSIGNMENTS
-# — Load FCM hard labels from saved outputs
 # ============================================================================
 try:
     import skfuzzy as fuzz
@@ -83,14 +84,13 @@ except ImportError:
                            "scikit-fuzzy", "--break-system-packages", "-q"])
     import skfuzzy as fuzz
 
-# Re-run FCM at k=3 on global log1p PCA space to get cluster labels
 X_global_mean   = X_log.mean(axis=0)
 X_global_std    = X_log.std(axis=0);  X_global_std[X_global_std == 0] = 1
 X_global_scaled = (X_log - X_global_mean) / X_global_std
 X_centered      = X_global_scaled - X_global_scaled.mean(axis=0)
 X_centered      = np.nan_to_num(X_centered, nan=0.0, posinf=0.0, neginf=0.0)
 _, S, Vt        = np.linalg.svd(X_centered, full_matrices=False)
-X_global_pca    = X_centered @ Vt[:2].T   # top 2 PCs
+X_global_pca    = X_centered @ Vt[:2].T
 
 cntr, u, _, _, _, _, fpc = fuzz.cluster.cmeans(
     X_global_pca.T, c=3, m=2.0,
@@ -101,19 +101,17 @@ hard_labels = np.argmax(u, axis=0)
 print(f"FCM k=3 | FPC={fpc:.4f}")
 for c in range(3):
     mask = hard_labels == c
-    n_older = (df["AGEGR1C"].values[mask] != "18-29").sum()
     print(f"  Cluster {c+1}: n={mask.sum()}  "
           f"Male={y[mask].sum()}  Female={(y[mask]==0).sum()}")
 
 # ============================================================================
 # BUILD HEATMAP DATA
-# mean log1p MFI per cluster for top cytokines
 # ============================================================================
 top_idx  = [CYTO_COLS.index(c) for c in TOP_CYTOKINES]
 X_top    = X_log[:, top_idx]
 
-n_clusters   = 3
-heatmap_vals = np.zeros((n_clusters, len(TOP_CYTOKINES)))
+n_clusters     = 3
+heatmap_vals   = np.zeros((n_clusters, len(TOP_CYTOKINES)))
 cluster_labels = []
 
 for c in range(n_clusters):
@@ -125,19 +123,18 @@ for c in range(n_clusters):
         f"Cluster {c+1}\n(n={mask.sum()}, M:{n_male} F:{n_female})"
     )
 
-# Z-score across clusters per cytokine for better contrast
+# Z-score across clusters per cytokine
 heatmap_z = (heatmap_vals - heatmap_vals.mean(axis=0)) / \
             (heatmap_vals.std(axis=0) + 1e-8)
+
+z_max = np.abs(heatmap_z).max()
+print(f"Z-score range: {heatmap_z.min():.2f} to {heatmap_z.max():.2f}")
 
 # ============================================================================
 # VISUALIZATION
 # ============================================================================
-fig = plt.figure(figsize=(14, 6))
-gs  = gridspec.GridSpec(1, 2, width_ratios=[3, 1], wspace=0.05)
-
-# Main heatmap
-ax_main = fig.add_subplot(gs[0])
-z_max = np.abs(heatmap_z).max()
+fig = plt.figure(figsize=(12, 6))
+ax_main = fig.add_subplot(111)
 im = ax_main.imshow(heatmap_z, cmap="RdBu_r", aspect="auto",
                     vmin=-z_max, vmax=z_max)
 
@@ -151,28 +148,16 @@ ax_main.set_title(
     fontsize=12, fontweight="bold"
 )
 
-# Annotate cells with mean MFI values
 for i in range(n_clusters):
     for j in range(len(TOP_CYTOKINES)):
         ax_main.text(j, i, f"{heatmap_vals[i, j]:.2f}",
                      ha="center", va="center", fontsize=8,
                      color="white" if abs(heatmap_z[i, j]) > 1.2 else "black")
 
-plt.colorbar(im, ax=ax_main, label=f"Z-score (max={z_max:.1f})",
-             fraction=0.03, pad=0.02)
-
-# Pathway annotation panel
-ax_ann = fig.add_subplot(gs[1])
-ax_ann.axis("off")
-
-pathway_text = "Immune Pathway\nAnnotation\n" + "─" * 22 + "\n"
-for cyto in TOP_CYTOKINES:
-    pathway_text += f"{cyto:<10}: {PATHWAY_ANNOTATION[cyto]}\n"
-
-ax_ann.text(0.05, 0.95, pathway_text,
-            transform=ax_ann.transAxes,
-            fontsize=8, va="top", fontfamily="monospace",
-            bbox=dict(boxstyle="round", facecolor="#f0f0f0", alpha=0.8))
+cbar = plt.colorbar(im, ax=ax_main, label="Z-score",
+                    fraction=0.03, pad=0.02)
+cbar.set_ticks(np.linspace(-z_max, z_max, 7))
+cbar.set_ticklabels([f"{v:.1f}" for v in np.linspace(-z_max, z_max, 7)])
 
 plt.suptitle(
     "Top Cytokines by Immune Cluster — Biological Annotation",
