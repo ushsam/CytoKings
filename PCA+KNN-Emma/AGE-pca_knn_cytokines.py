@@ -190,7 +190,7 @@ loadings_df = pd.DataFrame(
     index=CYTO_COLS,
     columns=["PC1", "PC2", "PC3"]
 ).round(4)
-loadings_df.to_csv(OUTPUT_DIR / "pca_loadings_global.csv")
+loadings_df.to_csv(OUTPUT_DIR / "age-pca_loadings_global.csv")
 
 print("  PC loadings (top contributors per PC):")
 for pc_idx, pc_label in enumerate(pc_labels):
@@ -265,7 +265,7 @@ plt.savefig(FIGURES_DIR / "global_pca.png",
             dpi=150, bbox_inches="tight", facecolor="white")
 plt.close()
 print("  Figure saved: global_pca.png")
-print("  CSV saved:    pca_loadings_global.csv")
+print("  CSV saved:    age-pca_loadings_global.csv")
 print()
 
 # ================================================================================
@@ -346,7 +346,7 @@ for (n_pca, k), res in ranked:
         "Std Accuracy":   round(res["std_acc"],  4),
         "Fold Accs":      [round(a, 4) for a in res["fold_accs"]],
     })
-pd.DataFrame(summary_rows).to_csv(OUTPUT_DIR / "results_summary.csv", index=False)
+pd.DataFrame(summary_rows).to_csv(OUTPUT_DIR / "age-results_summary.csv", index=False)
 
 print("=" * 65)
 print("SECTION 6: HYPERPARAMETER RANKING")
@@ -404,7 +404,7 @@ importance_df = pd.DataFrame({
     "Importance": mean_importance[ranking_idx].round(6),
     "Std":        std_importance[ranking_idx].round(6),
 })
-importance_df.to_csv(OUTPUT_DIR / "feature_importance.csv", index=False)
+importance_df.to_csv(OUTPUT_DIR / "age-feature_importance.csv", index=False)
 
 print("=" * 65)
 print("SECTION 8: FEATURE IMPORTANCE — Top 10 cytokines")

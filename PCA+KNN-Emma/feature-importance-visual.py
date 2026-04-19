@@ -15,8 +15,9 @@ from pathlib import Path
 BASE_DIR       = Path(__file__).resolve().parent.parent
 PCA_DIR        = BASE_DIR / "PCA+KNN-Emma" / "Outputs" / "cytokines_only"
 SEX_XGB_DIR    = BASE_DIR / "XGBoost" / "cytokine-only" / "sex" / "Outputs"
-SEX_LR_DIR     = BASE_DIR / "XGBoost" / "cytokine-only"/"sex" / "sex_enhanced" / "Outputs"
+SEX_LR_DIR     = BASE_DIR / "XGBoost" / "cytokine-only" / "sex" / "sex_enhanced" / "Outputs"
 AGE_DIR        = BASE_DIR / "XGBoost" / "cytokine-only" / "age" / "Outputs" / "binary_age"
+AGE_KNN_DIR    = BASE_DIR / "PCA+KNN-Emma" / "Outputs" / "age_binary"
 OUTPUT_DIR     = BASE_DIR / "XGBoost" / "cytokine-only" / "feature_importance_summary"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -29,6 +30,10 @@ age_xgb_imp = pd.read_csv(AGE_DIR     / "results_xgb_importance_age.csv")
 age_lr_imp  = pd.read_csv(AGE_DIR     / "results_lr_coefficients_age.csv")
 sex_ttest   = pd.read_csv(PCA_DIR     / "cytokine_sex_comparison.csv")
 age_anova   = pd.read_csv(AGE_DIR     / "results_anova_age.csv")
+knn_sex_imp = pd.read_csv(PCA_DIR     / "feature_importance.csv")
+knn_age_imp = pd.read_csv(AGE_KNN_DIR     / "age-feature_importance.csv")
+
+
 
 # ============================================================================
 # NORMALIZE IMPORTANCE SCORES 0-1 for fair comparison
@@ -41,6 +46,8 @@ sex_xgb_imp["norm"] = normalize(sex_xgb_imp, "Importance")
 age_xgb_imp["norm"] = normalize(age_xgb_imp, "Importance")
 sex_lr_imp["norm"]  = normalize(sex_lr_imp,  "Importance")
 age_lr_imp["norm"]  = normalize(age_lr_imp,  "Coefficient")
+knn_sex_imp["norm"] = normalize(knn_sex_imp, "Importance")
+knn_age_imp["norm"] = normalize(knn_age_imp, "Importance")
 
 # Significance flags
 sex_sig = dict(zip(sex_ttest["Cytokine"], sex_ttest["Significant"]))
@@ -132,82 +139,97 @@ print("✓ Saved: feature_importance_sex_vs_age.png")
 # ============================================================================
 # FIGURE 2: Scatter plot — XGBoost sex vs age importance
 # ============================================================================
-fig2, ax = plt.subplots(figsize=(9, 9))
+# ============================================================================
+# FIGURE 2: Scatter plot — Sex vs Age importance (XGBoost vs LogReg)
+# ============================================================================
+from matplotlib.lines import Line2D
 
-# Color by importance quartile
-sex_q75 = merged["Sex_norm"].quantile(0.75)
-age_q75 = merged["Age_norm"].quantile(0.75)
+def make_scatter(ax, sex_vals, age_vals, features_list, title):
+    sex_q75 = pd.Series(sex_vals).quantile(0.75)
+    age_q75 = pd.Series(age_vals).quantile(0.75)
 
-point_colors = []
-for _, row in merged.iterrows():
-    if row["Sex_norm"] >= sex_q75 and row["Age_norm"] >= age_q75:
-        point_colors.append("#9B59B6")   # purple = high for both
-    elif row["Sex_norm"] >= sex_q75:
-        point_colors.append(COLOR_SEX)   # blue = high for sex
-    elif row["Age_norm"] >= age_q75:
-        point_colors.append(COLOR_AGE)   # orange = high for age
-    else:
-        point_colors.append("#AAAAAA")   # gray = lower importance
+    point_colors = []
+    for s, a in zip(sex_vals, age_vals):
+        if s >= sex_q75 and a >= age_q75:
+            point_colors.append("#9B59B6")
+        elif s >= sex_q75:
+            point_colors.append(COLOR_SEX)
+        elif a >= age_q75:
+            point_colors.append(COLOR_AGE)
+        else:
+            point_colors.append("#AAAAAA")
 
-ax.scatter(
-    merged["Sex_norm"], merged["Age_norm"],
-    s=180, alpha=0.9, color=point_colors,
-    edgecolor="white", linewidth=1.5, zorder=3
+    ax.scatter(sex_vals, age_vals, s=180, alpha=0.9,
+               color=point_colors, edgecolor="white",
+               linewidth=1.5, zorder=3)
+
+    for feat, s, a in zip(features_list, sex_vals, age_vals):
+        ax.annotate(feat, (s, a),
+                    textcoords="offset points", xytext=(8, 4),
+                    fontsize=9, fontweight="bold", color="black")
+
+    ax.plot([0, 1.1], [0, 1.1], "k--", alpha=0.3,
+            linewidth=1.5, label="Equal importance")
+    ax.axhline(0.5, color="gray", linestyle=":", alpha=0.4, linewidth=1)
+    ax.axvline(0.5, color="gray", linestyle=":", alpha=0.4, linewidth=1)
+    ax.text(0.02, 0.98, "Age-specific\n(not sex)", transform=ax.transAxes,
+            fontsize=8, color="gray", va="top", style="italic")
+    ax.text(0.98, 0.02, "Sex-specific\n(not age)", transform=ax.transAxes,
+            fontsize=8, color="gray", ha="right", style="italic")
+    ax.text(0.98, 0.98, "Important\nfor both", transform=ax.transAxes,
+            fontsize=8, color="gray", ha="right", va="top", style="italic")
+    ax.text(0.02, 0.02, "Low importance\nfor both", transform=ax.transAxes,
+            fontsize=8, color="gray", style="italic")
+    ax.set_xlabel("Sex Prediction Importance (normalized)", fontsize=11,
+                  fontweight="bold")
+    ax.set_ylabel("Age Prediction Importance (normalized)", fontsize=11,
+                  fontweight="bold")
+    ax.set_title(title, fontsize=11, fontweight="bold")
+    ax.set_xlim(-0.05, 1.1)
+    ax.set_ylim(-0.05, 1.1)
+    ax.grid(alpha=0.3)
+    ax.legend(handles=[
+        Line2D([0], [0], marker="o", color="w",
+               markerfacecolor=COLOR_SEX, markersize=9, label="Top quartile sex"),
+        Line2D([0], [0], marker="o", color="w",
+               markerfacecolor=COLOR_AGE, markersize=9, label="Top quartile age"),
+        Line2D([0], [0], marker="o", color="w",
+               markerfacecolor="#9B59B6", markersize=9, label="Top quartile both"),
+        Line2D([0], [0], marker="o", color="w",
+               markerfacecolor="#AAAAAA", markersize=9, label="Lower importance"),
+        Line2D([0], [0], color="k", linestyle="--", alpha=0.3,
+               label="Equal importance"),
+    ], fontsize=8, loc="upper left")
+
+fig2, axes2 = plt.subplots(1, 2, figsize=(16, 8))
+fig2.suptitle(
+    "Cytokine Importance: Sex vs Age — XGBoost vs Logistic Regression\n"
+    "Color = importance quartile",
+    fontsize=13, fontweight="bold"
 )
 
-# Bold cytokine labels
-for _, row in merged.iterrows():
-    ax.annotate(
-        row["Feature"],
-        (row["Sex_norm"], row["Age_norm"]),
-        textcoords="offset points",
-        xytext=(8, 4),
-        fontsize=9,
-        fontweight="bold",
-        color="black"
-    )
+# XGBoost scatter
+make_scatter(
+    axes2[0],
+    merged["Sex_norm"].values,
+    merged["Age_norm"].values,
+    merged["Feature"].tolist(),
+    "XGBoost\nSex vs Age Importance"
+)
 
-ax.plot([0, 1.1], [0, 1.1], "k--", alpha=0.3,
-        linewidth=1.5, label="Equal importance")
+# LogReg scatter — align features to merged order
+lr_sex_aligned = merged_lr.set_index("Feature").reindex(
+    merged["Feature"])["Sex_LR_norm"].fillna(0).values
+lr_age_aligned = merged_lr.set_index("Feature").reindex(
+    merged["Feature"])["Age_LR_norm"].fillna(0).values
 
-ax.axhline(0.5, color="gray", linestyle=":", alpha=0.4, linewidth=1)
-ax.axvline(0.5, color="gray", linestyle=":", alpha=0.4, linewidth=1)
-
-ax.text(0.02, 0.98, "Age-specific\n(not sex)", transform=ax.transAxes,
-        fontsize=9, color="gray", va="top", style="italic")
-ax.text(0.98, 0.02, "Sex-specific\n(not age)", transform=ax.transAxes,
-        fontsize=9, color="gray", ha="right", style="italic")
-ax.text(0.98, 0.98, "Important\nfor both", transform=ax.transAxes,
-        fontsize=9, color="gray", ha="right", va="top", style="italic")
-ax.text(0.02, 0.02, "Low importance\nfor both", transform=ax.transAxes,
-        fontsize=9, color="gray", style="italic")
-
-from matplotlib.lines import Line2D
-legend_elements = [
-    Line2D([0], [0], marker="o", color="w", markerfacecolor=COLOR_SEX,
-           markersize=10, label="Top quartile for sex"),
-    Line2D([0], [0], marker="o", color="w", markerfacecolor=COLOR_AGE,
-           markersize=10, label="Top quartile for age"),
-    Line2D([0], [0], marker="o", color="w", markerfacecolor="#9B59B6",
-           markersize=10, label="Top quartile for both"),
-    Line2D([0], [0], marker="o", color="w", markerfacecolor="#AAAAAA",
-           markersize=10, label="Lower importance"),
-    Line2D([0], [0], color="k", linestyle="--", alpha=0.3,
-           label="Equal importance"),
-]
-ax.legend(handles=legend_elements, fontsize=9, loc="upper left")
-
-ax.set_xlabel("Sex Prediction Importance (normalized)", fontsize=12,
-              fontweight="bold")
-ax.set_ylabel("Age Prediction Importance (normalized)", fontsize=12,
-              fontweight="bold")
-ax.set_title("XGBoost: Cytokine Importance — Sex vs Age\n"
-             "Above diagonal = more important for age  |  "
-             "Below = more important for sex",
-             fontsize=12, fontweight="bold")
-ax.set_xlim(-0.05, 1.1)
-ax.set_ylim(-0.05, 1.1)
-ax.grid(alpha=0.3)
+make_scatter(
+    axes2[1],
+    lr_sex_aligned,
+    lr_age_aligned,
+    merged["Feature"].tolist(),
+    "Logistic Regression\nSex vs Age Importance"
+)
 
 plt.tight_layout()
 plt.savefig(OUTPUT_DIR / "feature_importance_scatter.png",
@@ -267,52 +289,57 @@ plt.close()
 print("✓ Saved: feature_importance_lr_sex_vs_age.png")
 
 # ============================================================================
-# FIGURE 3: Combined Heatmap — XGBoost + LR, Sex + Age
+# FIGURE 3: Combined Heatmap — XGBoost + LR + KNN, Sex + Age
 # ============================================================================
-fig3, ax3 = plt.subplots(figsize=(6, 10))
+fig3, ax3 = plt.subplots(figsize=(9, 10))
 
-# Build 4-column matrix: XGB Sex, XGB Age, LR Sex, LR Age
-# Align on features — use all cytokines present in either
 all_features = sorted(set(merged["Feature"]) | set(merged_lr["Feature"]))
 
 xgb_sex = merged.set_index("Feature").reindex(all_features)["Sex_norm"].fillna(0).values
 xgb_age = merged.set_index("Feature").reindex(all_features)["Age_norm"].fillna(0).values
 lr_sex  = merged_lr.set_index("Feature").reindex(all_features)["Sex_LR_norm"].fillna(0).values
 lr_age  = merged_lr.set_index("Feature").reindex(all_features)["Age_LR_norm"].fillna(0).values
+knn_sex = knn_sex_imp.set_index("Cytokine").reindex(all_features)["norm"].fillna(0).values
+knn_age = knn_age_imp.set_index("Cytokine").reindex(all_features)["norm"].fillna(0).values
 
-heatmap_combined = np.column_stack([xgb_sex, xgb_age, lr_sex, lr_age])
+heatmap_combined = np.column_stack([xgb_sex, xgb_age, lr_sex, lr_age, knn_sex, knn_age])
 
-# Sort by combined total importance
-sort_order = np.argsort(heatmap_combined.sum(axis=1))
-heatmap_combined = heatmap_combined[sort_order]
-all_features_sorted = [all_features[i] for i in sort_order]
+sort_order           = np.argsort(heatmap_combined.sum(axis=1))
+heatmap_combined     = heatmap_combined[sort_order]
+all_features_sorted  = [all_features[i] for i in sort_order]
 
 im3 = ax3.imshow(heatmap_combined, cmap="YlOrRd", aspect="auto",
                  vmin=0, vmax=1)
-ax3.set_xticks([0, 1, 2, 3])
-ax3.set_xticklabels(["Sex\n(XGBoost)", "Age\n(XGBoost)",
-                     "Sex\n(LogReg)", "Age\n(LogReg)"], fontsize=9)
+ax3.set_xticks([0, 1, 2, 3, 4, 5])
+ax3.set_xticklabels([
+    "Sex\n(XGBoost)", "Age\n(XGBoost)",
+    "Sex\n(LogReg)",  "Age\n(LogReg)",
+    "Sex\n(KNN)",     "Age\n(KNN)"
+], fontsize=9)
 ax3.set_yticks(range(len(all_features_sorted)))
 ax3.set_yticklabels(all_features_sorted, fontsize=9)
-ax3.set_title("Feature Importance Heatmap\nXGBoost + Logistic Regression\n(normalized 0–1)",
+ax3.set_title("Feature Importance Heatmap\n"
+              "XGBoost + Logistic Regression + KNN\n(normalized 0–1)",
               fontsize=11, fontweight="bold")
 plt.colorbar(im3, ax=ax3, label="Normalized Importance")
 
-col_names = ["Sex_XGB", "Age_XGB", "Sex_LR", "Age_LR"]
 for i in range(len(all_features_sorted)):
-    for j in range(4):
+    for j in range(6):
         val = heatmap_combined[i, j]
         ax3.text(j, i, f"{val:.2f}", ha="center", va="center",
                  fontsize=7,
                  color="white" if val > 0.6 else "black")
 
-# Add vertical divider between XGBoost and LR columns
 ax3.axvline(1.5, color="white", linewidth=2)
+ax3.axvline(3.5, color="white", linewidth=2)
 ax3.text(0.5, -0.8, "XGBoost", ha="center", fontsize=9,
          color="#4A7FC1", fontweight="bold",
          transform=ax3.get_xaxis_transform())
 ax3.text(2.5, -0.8, "Logistic Regression", ha="center", fontsize=9,
          color="#5BAD72", fontweight="bold",
+         transform=ax3.get_xaxis_transform())
+ax3.text(4.5, -0.8, "KNN", ha="center", fontsize=9,
+         color="#E87D7D", fontweight="bold",
          transform=ax3.get_xaxis_transform())
 
 plt.tight_layout()
