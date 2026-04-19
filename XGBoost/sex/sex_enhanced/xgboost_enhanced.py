@@ -17,6 +17,8 @@ from sklearn.linear_model import LogisticRegression
 from xgboost import XGBClassifier
 from imblearn.over_sampling import SMOTE
 import warnings
+import joblib
+from pathlib import Path
 warnings.filterwarnings('ignore')
 
 print("="*80)
@@ -24,12 +26,22 @@ print("ENHANCED ML PIPELINE: XGBoost + Alternative Models")
 print("="*80)
 
 # ============================================================================
+# PATHS
+# ============================================================================
+BASE_DIR    = Path(__file__).resolve().parent.parent.parent.parent
+DATA_DIR    = BASE_DIR / "Data"
+OUTPUT_DIR  = BASE_DIR / "XGBoost" / "sex" /"sex_enhanced" /"Outputs"
+FIGURES_DIR = OUTPUT_DIR / "figures"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+FIGURES_DIR.mkdir(parents=True, exist_ok=True)
+
+# ============================================================================
 # 1. LOAD AND PREPARE DATA
 # ============================================================================
 print("\n1. Loading data...")
-data_dir = "../PCA+KNN/Outputs/"
-X = np.load(data_dir + "X_processed.npy")
-y = np.load(data_dir + "y_labels.npy")
+
+X = np.load(BASE_DIR / "PCA+KNN-Emma" / "Outputs" / "cytokines_only" / "X_processed.npy")
+y = np.load(BASE_DIR / "PCA+KNN-Emma" / "Outputs" / "cytokines_only" / "y_labels.npy")
 
 cytokines = [
     'IFN-gamma', 'IL-12p70', 'IL-13', 'IL-1beta', 'IL-2', 'IL-4', 'IL-5', 
@@ -126,10 +138,9 @@ print("-"*80)
 
 ensemble = VotingClassifier(
     estimators=[
-        ('xgb', models['XGBoost']),
-        ('rf', models['Random Forest']),
-        ('gb', models['Gradient Boosting']),
-        ('lr', models['Logistic Regression'])
+        ('rf',  models['Random Forest']),
+        ('gb',  models['Gradient Boosting']),
+        ('lr',  models['Logistic Regression'])
     ],
     voting='soft'
 )
@@ -206,14 +217,14 @@ comparison_df = pd.DataFrame([
     for name in results.keys()
 ])
 
-comparison_df.to_csv('./model_comparison.csv', index=False)
-print("✓ Model comparison saved: model_comparison.csv")
+comparison_df.to_csv(OUTPUT_DIR / "model_comparison.csv", index=False)
+print("✓ Model comparison saved")
 
-feature_importance.to_csv('./feature_importance_enhanced.csv', index=False)
-print("✓ Feature importance saved: feature_importance_enhanced.csv")
+feature_importance.to_csv(OUTPUT_DIR / "feature_importance_enhanced.csv", index=False)
+print("✓ Feature importance saved")
 
-best_model.save_model('./xgboost_smote.json')
-print("✓ Best model saved: xgboost_smote.json")
+joblib.dump(best_model, OUTPUT_DIR / "xgboost_smote.pkl")
+print("✓ Best model saved")
 
 # ============================================================================
 # 9. VISUALIZATION
@@ -283,8 +294,10 @@ axes[1, 2].set_xlabel('Importance')
 axes[1, 2].set_title('All Cytokines - Feature Importance')
 
 plt.tight_layout()
-plt.savefig('./enhanced_results_visualization.png', dpi=300, bbox_inches='tight')
-print("✓ Visualization saved: enhanced_results_visualization.png")
+plt.savefig(FIGURES_DIR / "xgboost_results_visualization.png",
+            dpi=150, bbox_inches='tight', facecolor='white')
+plt.close()
+print("✓ Visualization saved")
 
 print("\n" + "="*80)
 print("✅ Enhanced pipeline completed!")

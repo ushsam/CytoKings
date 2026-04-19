@@ -11,11 +11,23 @@ from scipy import stats
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 import warnings
+from pathlib import Path
 warnings.filterwarnings('ignore')
 
 print("="*90)
 print("COMPREHENSIVE DIAGNOSTIC ANALYSIS")
 print("="*90)
+
+# ============================================================================
+# PATHS
+# ============================================================================
+
+BASE_DIR    = Path(__file__).resolve().parent.parent.parent
+DATA_DIR    = BASE_DIR / "Data"
+OUTPUT_DIR  = BASE_DIR / "XGBoost" / "diagnostic"/ "Outputs" 
+FIGURES_DIR = OUTPUT_DIR / "figures"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+FIGURES_DIR.mkdir(parents=True, exist_ok=True)
 
 # ============================================================================
 # PART 1: DATA QUALITY ANALYSIS
@@ -25,7 +37,7 @@ print("PART 1: DATA QUALITY ISSUES")
 print("█"*90)
 
 # Load raw data
-df = pd.read_csv('../Data/analysis_merged_subject_level.csv')
+df = pd.read_csv(DATA_DIR / "analysis_merged_subject_level.csv")
 print(f"\nDataset shape: {df.shape}")
 print(f"Columns: {df.columns.tolist()}")
 
@@ -120,8 +132,8 @@ print("\n" + "█"*90)
 print("PART 2: MODEL PERFORMANCE ISSUES")
 print("█"*90)
 
-X = np.load('../PCA+KNN/Outputs/X_processed.npy')
-y = np.load('../PCA+KNN/Outputs/y_labels.npy')
+X = np.load(BASE_DIR / "PCA+KNN-Emma" / "Outputs" / "cytokines_only" / "X_processed.npy")
+y = np.load(BASE_DIR / "PCA+KNN-Emma" / "Outputs" / "cytokines_only" / "y_labels.npy")
 
 print(f"\n2.1 OVERFITTING DETECTION:")
 print("-" * 90)
@@ -428,8 +440,9 @@ ax.pie(race_counts.values, labels=race_counts.index, autopct='%1.1f%%', colors=c
 ax.set_title('Race Distribution\n(Imbalanced)')
 
 plt.tight_layout()
-plt.savefig('./diagnostic_report.png', dpi=300, bbox_inches='tight')
-print("\n✓ Diagnostic visualization saved: diagnostic_report.png")
+plt.savefig(FIGURES_DIR / "diagnostic_report.png", dpi=300, bbox_inches='tight')
+print(f"\n✓ Diagnostic visualization saved")
+print(f"  Figures : {FIGURES_DIR}")
 
 print("\n" + "="*90)
 print("DIAGNOSTIC REPORT COMPLETE")

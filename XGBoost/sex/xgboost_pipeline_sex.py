@@ -13,7 +13,19 @@ from sklearn.metrics import (accuracy_score, precision_score, recall_score,
                              classification_report, roc_curve, auc)
 from xgboost import XGBClassifier
 import warnings
+import joblib
+from pathlib import Path
 warnings.filterwarnings('ignore')
+
+# ============================================================================
+# PATHS
+# ============================================================================
+BASE_DIR    = Path(__file__).resolve().parent.parent.parent
+DATA_DIR    = BASE_DIR / "Data"
+OUTPUT_DIR  = BASE_DIR / "XGBoost" / "sex" /"Outputs"
+FIGURES_DIR = OUTPUT_DIR / "figures"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+FIGURES_DIR.mkdir(parents=True, exist_ok=True)
 
 # ============================================================================
 # 1. LOAD DATA
@@ -22,11 +34,11 @@ print("="*70)
 print("Loading processed data...")
 print("="*70)
 
-data_dir = "../PCA+KNN/Outputs/"
+PCA_DIR  = BASE_DIR / "PCA+KNN-Emma" / "Outputs" / "cytokines_only"
 
 # Load preprocessed features and labels
-X = np.load(data_dir + "X_processed.npy")
-y = np.load(data_dir + "y_labels.npy")
+X = np.load(PCA_DIR / "X_processed.npy")
+y = np.load(PCA_DIR / "y_labels.npy")
 
 # Load cytokine names for feature importance
 cytokines = [
@@ -135,28 +147,26 @@ print("Saving results...")
 print("="*70)
 
 # Save model
-model.save_model('./xgboost_sex_classifier.json')
-print("✓ Model saved: xgboost_sex_classifier.json")
+joblib.dump(model, OUTPUT_DIR / "xgboost_sex_classifier.pkl")
+print("✓ Model saved")
 
 # Save feature importance
-feature_importance.to_csv('./feature_importance.csv', index=False)
-print("✓ Feature importance saved: feature_importance.csv")
+feature_importance.to_csv(OUTPUT_DIR / "feature_importance.csv", index=False)
+print("✓ Feature importance saved")
 
 # Save results summary
-results = {
-    'Best Parameters': best_params,
+results_df = pd.DataFrame([{
+    'Best Parameters':  str(best_params),
     'CV Mean Accuracy': f"{cv_scores.mean():.4f}",
-    'CV Std': f"{cv_scores.std():.4f}",
-    'Train Accuracy': f"{accuracy:.4f}",
-    'Train Precision': f"{precision:.4f}",
-    'Train Recall': f"{recall:.4f}",
-    'Train F1-Score': f"{f1:.4f}",
-    'Train ROC-AUC': f"{roc_auc:.4f}",
-}
-
-results_df = pd.DataFrame([results])
-results_df.to_csv('./xgboost_results_summary.csv', index=False)
-print("✓ Results summary saved: xgboost_results_summary.csv")
+    'CV Std':           f"{cv_scores.std():.4f}",
+    'Train Accuracy':   f"{accuracy:.4f}",
+    'Train Precision':  f"{precision:.4f}",
+    'Train Recall':     f"{recall:.4f}",
+    'Train F1-Score':   f"{f1:.4f}",
+    'Train ROC-AUC':    f"{roc_auc:.4f}",
+}])
+results_df.to_csv(OUTPUT_DIR / "xgboost_results_summary.csv", index=False)
+print("✓ Results summary saved")
 
 # ============================================================================
 # 7. VISUALIZATION
@@ -168,27 +178,25 @@ print("="*70)
 fig, axes = plt.subplots(2, 2, figsize=(14, 10))
 
 # Top 10 Feature Importance
-top_n = 10
+top_n        = 10
 top_features = feature_importance.head(top_n)
 axes[0, 0].barh(top_features['Cytokine'], top_features['Importance'])
 axes[0, 0].set_xlabel('Importance')
 axes[0, 0].set_title('Top 10 Most Important Cytokines')
 axes[0, 0].invert_yaxis()
 
-# Confusion Matrix Heatmap
+# Confusion Matrix
 cm = confusion_matrix(y, y_pred)
-im = axes[0, 1].imshow(cm, interpolation='nearest', cmap='Blues')
+axes[0, 1].imshow(cm, interpolation='nearest', cmap='Blues')
 axes[0, 1].set_title('Confusion Matrix')
 axes[0, 1].set_ylabel('True Label')
 axes[0, 1].set_xlabel('Predicted Label')
-axes[0, 1].set_xticks([0, 1])
-axes[0, 1].set_yticks([0, 1])
-axes[0, 1].set_xticklabels(['Female', 'Male'])
-axes[0, 1].set_yticklabels(['Female', 'Male'])
+axes[0, 1].set_xticks([0, 1]);  axes[0, 1].set_xticklabels(['Female', 'Male'])
+axes[0, 1].set_yticks([0, 1]);  axes[0, 1].set_yticklabels(['Female', 'Male'])
 for i in range(2):
     for j in range(2):
-        axes[0, 1].text(j, i, cm[i, j], ha='center', va='center', 
-                       color='white' if cm[i, j] > cm.max()/2 else 'black')
+        axes[0, 1].text(j, i, cm[i, j], ha='center', va='center',
+                        color='white' if cm[i, j] > cm.max()/2 else 'black')
 
 # ROC Curve
 fpr, tpr, _ = roc_curve(y, y_pred_proba)
@@ -199,9 +207,9 @@ axes[1, 0].set_ylabel('True Positive Rate')
 axes[1, 0].set_title('ROC Curve')
 axes[1, 0].legend()
 
-# Cross-validation scores
+# CV scores
 axes[1, 1].bar(range(1, 6), cv_scores)
-axes[1, 1].axhline(cv_scores.mean(), color='r', linestyle='--', 
+axes[1, 1].axhline(cv_scores.mean(), color='r', linestyle='--',
                    label=f'Mean: {cv_scores.mean():.3f}')
 axes[1, 1].set_xlabel('Fold')
 axes[1, 1].set_ylabel('Accuracy')
@@ -210,9 +218,17 @@ axes[1, 1].set_xticks(range(1, 6))
 axes[1, 1].legend()
 
 plt.tight_layout()
-plt.savefig('./xgboost_results_visualization.png', dpi=300, bbox_inches='tight')
-print("✓ Visualization saved: xgboost_results_visualization.png")
+plt.savefig(FIGURES_DIR / "xgboost_results_visualization.png",
+            dpi=150, bbox_inches='tight', facecolor='white')
+plt.close()
+print("✓ Visualization saved")
 
 print("\n" + "="*70)
-print("Pipeline completed successfully!")
+print("PIPELINE COMPLETE — SEX CLASSIFICATION (XGBoost)")
+print("="*70)
+print(f"  CV Accuracy  : {cv_scores.mean():.4f} ± {cv_scores.std():.4f}")
+print(f"  ROC-AUC      : {roc_auc:.4f}")
+print(f"  Top cytokine : {feature_importance.iloc[0]['Cytokine']}")
+print(f"  Outputs      : {OUTPUT_DIR}")
+print(f"  Figures      : {FIGURES_DIR}")
 print("="*70)

@@ -20,8 +20,20 @@ from sklearn.metrics import (accuracy_score, precision_score, recall_score, f1_s
                              roc_auc_score, confusion_matrix, classification_report,
                              roc_curve, auc)
 from scipy import stats
+from pathlib import Path
 import warnings
 warnings.filterwarnings('ignore')
+
+# ============================================================================
+# PATHS
+# ============================================================================
+
+BASE_DIR    = Path(__file__).resolve().parent.parent.parent
+DATA_DIR    = BASE_DIR / "Data"
+OUTPUT_DIR  = BASE_DIR / "XGBoost" / "age"/ "Outputs" / "complete_age_predict" 
+FIGURES_DIR = OUTPUT_DIR / "figures"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+FIGURES_DIR.mkdir(parents=True, exist_ok=True)
 
 # ============================================================================
 # CONFIGURATION
@@ -41,7 +53,7 @@ print("="*90)
 # STEP 1: DATA LOADING & PREPROCESSING
 # ============================================================================
 print("\n[1/7] LOADING DATA...")
-df = pd.read_csv('../Data/analysis_merged_subject_level.csv')
+df = pd.read_csv(DATA_DIR / "analysis_merged_subject_level.csv")
 
 cytokines = [
     'IFN-gamma', 'IL-12p70', 'IL-13', 'IL-1beta', 'IL-2', 'IL-4', 'IL-5', 
@@ -152,7 +164,7 @@ print(f"Top 5 important features:\n{feature_importance_xgb.head()}")
 # ============================================================================
 print(f"\n[7/7] METHOD 3: LOGISTIC REGRESSION...")
 
-lr = LogisticRegression(max_iter=1000, random_state=RANDOM_STATE, multi_class='multinomial')
+lr = LogisticRegression(max_iter=1000, random_state=RANDOM_STATE, solver='lbfgs')
 cv_scores_lr = cross_val_score(lr, X_selected, y_encoded, cv=cv_repeated, scoring='accuracy')
 cv_f1_lr = cross_val_score(lr, X_selected, y_encoded, cv=cv_repeated, scoring='f1_weighted')
 
@@ -178,8 +190,8 @@ comparison = pd.DataFrame({
 })
 
 print("\n" + comparison.to_string(index=False))
-comparison.to_csv('./results_model_comparison_age.csv', index=False)
-print("\n✓ Comparison saved: results_model_comparison_age.csv")
+comparison.to_csv(OUTPUT_DIR / "results_model_comparison_age.csv", index=False)
+print("\n✓ Comparison saved")
 
 # ============================================================================
 # BEST MODEL EVALUATION (XGBoost - Best Overall)
@@ -305,12 +317,15 @@ ax6.axhline(1/len(le.classes_), color='red', linestyle='--', alpha=0.5, label='R
 ax6.legend()
 
 plt.tight_layout()
-plt.savefig('./results_age_prediction_complete.png', dpi=300, bbox_inches='tight')
-print("✓ Saved: results_age_prediction_complete.png")
+plt.savefig(FIGURES_DIR / "results_age_prediction_complete.png",
+            dpi=150, bbox_inches='tight', facecolor='white')
+plt.close()
+print("✓ Figure saved: results_age_prediction_complete.png")
 
 # ============================================================================
 # SAVE RESULTS
 # ============================================================================
+
 results_summary = pd.DataFrame({
     'Metric': ['Best Model', 'Accuracy (CV)', 'F1-Score (CV)', 'Precision (CV)', 'Recall (CV)',
                'Target Variable', 'Input Features', 'Sample Size', 'Number of Classes'],
@@ -320,11 +335,13 @@ results_summary = pd.DataFrame({
               TARGET, f'{FEATURE_SELECTION_N} selected cytokines', len(df), len(le.classes_)]
 })
 
-results_summary.to_csv('./results_summary_age.csv', index=False)
-feature_importance_xgb.to_csv('./results_feature_importance_age.csv', index=False)
+results_summary.to_csv(OUTPUT_DIR / "results_summary_age.csv", index=False)
+feature_importance_xgb.to_csv(OUTPUT_DIR / "results_feature_importance_age.csv", index=False)
 
-print("✓ Saved: results_summary_age.csv")
-print("✓ Saved: results_feature_importance_age.csv")
+print(f"✓ Saved: results_summary_age.csv")
+print(f"✓ Saved: results_feature_importance_age.csv")
+print(f"  Outputs : {OUTPUT_DIR}")
+print(f"  Figures : {FIGURES_DIR}")
 
 print("\n" + "="*90)
 print("✅ PIPELINE COMPLETE!")

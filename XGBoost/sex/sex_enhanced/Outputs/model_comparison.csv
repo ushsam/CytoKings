@@ -4,4 +4,4 @@ Random Forest,0.5717,0.6000
 Gradient Boosting,0.5009,0.5680
 SVM (RBF),0.5480,0.5520
 Logistic Regression,0.5554,0.5120
-Ensemble (Voting),0.5246,N/A
+Ensemble (Voting),0.5323,N/A

@@ -1,0 +1,10 @@
+Metric,Value
+Target,Binary Age (Young vs Older)
+Classes,"Young=18-39 (n=65), Older=40-66 (n=60)"
+Sample Size,125
+Best Model,Logistic Regression
+Best Accuracy,0.5496
+Best F1,0.5241
+Best ROC-AUC,0.6015
+Random Baseline,50.0%
+Features Used,12 cytokines (ANOVA selected)
