@@ -28,9 +28,9 @@ print("="*80)
 # ============================================================================
 # PATHS
 # ============================================================================
-BASE_DIR    = Path(__file__).resolve().parent.parent.parent.parent
+BASE_DIR    = Path(__file__).resolve().parent.parent.parent.parent.parent
 DATA_DIR    = BASE_DIR / "Data"
-OUTPUT_DIR  = BASE_DIR / "XGBoost" / "sex" /"sex_enhanced" /"Outputs"
+OUTPUT_DIR  = BASE_DIR / "XGBoost" / "cytokine-only" / "sex" /"sex_enhanced" /"Outputs"
 FIGURES_DIR = OUTPUT_DIR / "figures"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 FIGURES_DIR.mkdir(parents=True, exist_ok=True)

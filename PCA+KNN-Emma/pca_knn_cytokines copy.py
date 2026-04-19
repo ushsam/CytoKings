@@ -18,15 +18,16 @@ from pathlib import Path
 # PATHS
 # ================================================================================
 BASE_DIR    = Path(__file__).resolve().parent.parent
-PCA_DIR     = BASE_DIR / "PCA+KNN-Emma" / "Outputs" / "cytokines_only"
-AGE_DIR     = BASE_DIR / "XGBoost" / "cytokine-only" / "age" / "Outputs" / "binary_age"
-OUTPUT_DIR  = BASE_DIR / "XGBoost" / "cytokine-only" / "feature_importance_summary"
+DATA_DIR    = BASE_DIR / "Data-Emma"
+OUTPUT_DIR  = BASE_DIR / "PCA+KNN-Emma" / "Outputs" / "cytokines_only"
+FIGURES_DIR = OUTPUT_DIR / "figures"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+FIGURES_DIR.mkdir(parents=True, exist_ok=True)
 
 # ================================================================================
 # SECTION 1: DATA LOADING
 # ================================================================================
-df = pd.read_csv(DATA_DIR / "analysis_merged_subject_level_cell-type.csv")
+df = pd.read_csv(DATA_DIR / "analysis_merged_subject_level.csv")
 
 CYTO_COLS = [
     "IFN-gamma", "IL-12p70", "IL-13", "IL-1beta", "IL-2", "IL-4", "IL-5",

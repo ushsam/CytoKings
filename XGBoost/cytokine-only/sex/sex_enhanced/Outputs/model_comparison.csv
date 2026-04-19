@@ -1,7 +1,7 @@
 Model,CV Accuracy (Balanced),CV Accuracy (Original)
-XGBoost,0.5560,0.5760
-Random Forest,0.5717,0.6000
-Gradient Boosting,0.5009,0.5680
-SVM (RBF),0.5480,0.5520
-Logistic Regression,0.5554,0.5120
-Ensemble (Voting),0.5323,N/A
+XGBoost,0.5778,0.5840
+Random Forest,0.5942,0.6240
+Gradient Boosting,0.5077,0.5760
+SVM (RBF),0.5785,0.5440
+Logistic Regression,0.5717,0.5760
+Ensemble (Voting),0.5391,N/A

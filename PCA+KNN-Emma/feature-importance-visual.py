@@ -132,37 +132,81 @@ print("✓ Saved: feature_importance_sex_vs_age.png")
 # ============================================================================
 # FIGURE 2: Scatter plot — XGBoost sex vs age importance
 # ============================================================================
-fig2, ax = plt.subplots(figsize=(8, 8))
+fig2, ax = plt.subplots(figsize=(9, 9))
 
-ax.scatter(merged["Sex_norm"], merged["Age_norm"],
-           s=100, alpha=0.8, color="#4A7FC1", edgecolor="white", zorder=3)
+# Color by importance quartile
+sex_q75 = merged["Sex_norm"].quantile(0.75)
+age_q75 = merged["Age_norm"].quantile(0.75)
 
+point_colors = []
 for _, row in merged.iterrows():
-    ax.annotate(row["Feature"],
-                (row["Sex_norm"], row["Age_norm"]),
-                textcoords="offset points", xytext=(6, 3),
-                fontsize=8, color="black")
+    if row["Sex_norm"] >= sex_q75 and row["Age_norm"] >= age_q75:
+        point_colors.append("#9B59B6")   # purple = high for both
+    elif row["Sex_norm"] >= sex_q75:
+        point_colors.append(COLOR_SEX)   # blue = high for sex
+    elif row["Age_norm"] >= age_q75:
+        point_colors.append(COLOR_AGE)   # orange = high for age
+    else:
+        point_colors.append("#AAAAAA")   # gray = lower importance
 
-max_val = max(merged["Sex_norm"].max(), merged["Age_norm"].max())
-ax.plot([0, max_val], [0, max_val], "k--", alpha=0.3,
-        linewidth=1, label="Equal importance")
-ax.axhline(0.5, color="gray", linestyle=":", alpha=0.4, linewidth=0.8)
-ax.axvline(0.5, color="gray", linestyle=":", alpha=0.4, linewidth=0.8)
+ax.scatter(
+    merged["Sex_norm"], merged["Age_norm"],
+    s=180, alpha=0.9, color=point_colors,
+    edgecolor="white", linewidth=1.5, zorder=3
+)
+
+# Bold cytokine labels
+for _, row in merged.iterrows():
+    ax.annotate(
+        row["Feature"],
+        (row["Sex_norm"], row["Age_norm"]),
+        textcoords="offset points",
+        xytext=(8, 4),
+        fontsize=9,
+        fontweight="bold",
+        color="black"
+    )
+
+ax.plot([0, 1.1], [0, 1.1], "k--", alpha=0.3,
+        linewidth=1.5, label="Equal importance")
+
+ax.axhline(0.5, color="gray", linestyle=":", alpha=0.4, linewidth=1)
+ax.axvline(0.5, color="gray", linestyle=":", alpha=0.4, linewidth=1)
+
 ax.text(0.02, 0.98, "Age-specific\n(not sex)", transform=ax.transAxes,
-        fontsize=8, color="gray", va="top")
+        fontsize=9, color="gray", va="top", style="italic")
 ax.text(0.98, 0.02, "Sex-specific\n(not age)", transform=ax.transAxes,
-        fontsize=8, color="gray", ha="right")
+        fontsize=9, color="gray", ha="right", style="italic")
 ax.text(0.98, 0.98, "Important\nfor both", transform=ax.transAxes,
-        fontsize=8, color="gray", ha="right", va="top")
+        fontsize=9, color="gray", ha="right", va="top", style="italic")
 ax.text(0.02, 0.02, "Low importance\nfor both", transform=ax.transAxes,
-        fontsize=8, color="gray")
-ax.set_xlabel("Sex Prediction Importance (normalized)", fontsize=11)
-ax.set_ylabel("Age Prediction Importance (normalized)", fontsize=11)
-ax.set_title("XGBoost: Cytokine Importance Sex vs Age\n"
+        fontsize=9, color="gray", style="italic")
+
+from matplotlib.lines import Line2D
+legend_elements = [
+    Line2D([0], [0], marker="o", color="w", markerfacecolor=COLOR_SEX,
+           markersize=10, label="Top quartile for sex"),
+    Line2D([0], [0], marker="o", color="w", markerfacecolor=COLOR_AGE,
+           markersize=10, label="Top quartile for age"),
+    Line2D([0], [0], marker="o", color="w", markerfacecolor="#9B59B6",
+           markersize=10, label="Top quartile for both"),
+    Line2D([0], [0], marker="o", color="w", markerfacecolor="#AAAAAA",
+           markersize=10, label="Lower importance"),
+    Line2D([0], [0], color="k", linestyle="--", alpha=0.3,
+           label="Equal importance"),
+]
+ax.legend(handles=legend_elements, fontsize=9, loc="upper left")
+
+ax.set_xlabel("Sex Prediction Importance (normalized)", fontsize=12,
+              fontweight="bold")
+ax.set_ylabel("Age Prediction Importance (normalized)", fontsize=12,
+              fontweight="bold")
+ax.set_title("XGBoost: Cytokine Importance — Sex vs Age\n"
              "Above diagonal = more important for age  |  "
              "Below = more important for sex",
              fontsize=12, fontweight="bold")
-ax.legend(fontsize=9)
+ax.set_xlim(-0.05, 1.1)
+ax.set_ylim(-0.05, 1.1)
 ax.grid(alpha=0.3)
 
 plt.tight_layout()
@@ -170,8 +214,6 @@ plt.savefig(OUTPUT_DIR / "feature_importance_scatter.png",
             dpi=150, bbox_inches="tight", facecolor="white")
 plt.close()
 print("✓ Saved: feature_importance_scatter.png")
-
-
 
 # ============================================================================
 # FIGURE 4: Logistic Regression — Sex vs Age side-by-side
