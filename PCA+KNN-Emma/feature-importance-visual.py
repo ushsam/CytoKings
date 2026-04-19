@@ -349,6 +349,53 @@ plt.close()
 print("✓ Saved: feature_importance_heatmap_combined.png")
 
 # ============================================================================
+# FIGURE: Sex-only heatmap — XGBoost + LogReg + KNN
+# ============================================================================
+# ============================================================================
+# FIGURE: Sex-only heatmap — XGBoost + LogReg + KNN (models as rows)
+# ============================================================================
+fig_sex, ax_sex = plt.subplots(figsize=(14, 4))
+
+all_features_sex = sorted(set(merged["Feature"]) | set(merged_lr["Feature"]))
+
+xgb_sex_only = merged.set_index("Feature").reindex(all_features_sex)["Sex_norm"].fillna(0).values
+lr_sex_only  = merged_lr.set_index("Feature").reindex(all_features_sex)["Sex_LR_norm"].fillna(0).values
+knn_sex_only = knn_sex_imp.set_index("Cytokine").reindex(all_features_sex)["norm"].fillna(0).values
+
+# Shape: (3 models, n_cytokines)
+heatmap_sex = np.row_stack([xgb_sex_only, lr_sex_only, knn_sex_only])
+
+# Sort cytokines by combined importance across all models
+sort_order_sex      = np.argsort(heatmap_sex.sum(axis=0))[::-1]
+heatmap_sex         = heatmap_sex[:, sort_order_sex]
+features_sex_sorted = [all_features_sex[i] for i in sort_order_sex]
+
+im_sex = ax_sex.imshow(heatmap_sex, cmap="YlOrRd", aspect="auto",
+                       vmin=0, vmax=1)
+ax_sex.set_xticks(range(len(features_sex_sorted)))
+ax_sex.set_xticklabels(features_sex_sorted, rotation=45, ha="right", fontsize=9)
+ax_sex.set_yticks([0, 1, 2])
+ax_sex.set_yticklabels(["XGBoost", "LogReg", "KNN"], fontsize=10)
+ax_sex.set_title("Feature Importance — Sex Prediction\n(normalized 0–1, cytokines sorted by combined importance)",
+                 fontsize=11, fontweight="bold")
+plt.colorbar(im_sex, ax=ax_sex, label="Normalized Importance")
+
+for i in range(3):
+    for j in range(len(features_sex_sorted)):
+        val = heatmap_sex[i, j]
+        ax_sex.text(j, i, f"{val:.2f}", ha="center", va="center",
+                    fontsize=7,
+                    color="white" if val > 0.6 else "black")
+
+ax_sex.axhline(0.5, color="white", linewidth=2)
+ax_sex.axhline(1.5, color="white", linewidth=2)
+
+plt.tight_layout()
+plt.savefig(OUTPUT_DIR / "feature_importance_heatmap_sex.png",
+            dpi=150, bbox_inches="tight", facecolor="white")
+plt.close()
+print("✓ Saved: feature_importance_heatmap_sex.png")
+# ============================================================================
 # SUMMARY PRINT
 # ============================================================================
 print(f"\n✓ All figures saved to: {OUTPUT_DIR}")
