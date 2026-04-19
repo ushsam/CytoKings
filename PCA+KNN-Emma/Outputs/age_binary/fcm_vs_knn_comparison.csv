@@ -1,0 +1,12 @@
+Method,Accuracy,F1_Score,Sensitivity,Specificity,Notes
+"KNN (PCA=9, K=5)",0.576,0.5546,0.55,0.6,Cross-validated
+FCM_Global_PCA_k2,0.536,0.1714,0.1,0.9385,"FPC=0.9318, full dataset (no CV), Global_PCA"
+FCM_Global_PCA_k3,0.552,0.3,0.2,0.8769,"FPC=0.8518, full dataset (no CV), Global_PCA"
+FCM_Global_PCA_k4,0.552,0.6056,0.7167,0.4,"FPC=0.7315, full dataset (no CV), Global_PCA"
+FCM_Global_PCA_k5,0.608,0.6316,0.7,0.5231,"FPC=0.6839, full dataset (no CV), Global_PCA"
+FCM_Global_PCA_k6,0.576,0.5391,0.5167,0.6308,"FPC=0.6507, full dataset (no CV), Global_PCA"
+FCM_CV_PCA_k2,0.528,0.1194,0.0667,0.9538,"FPC=0.9198, full dataset (no CV), CV_PCA"
+FCM_CV_PCA_k3,0.544,0.4242,0.35,0.7231,"FPC=0.7233, full dataset (no CV), CV_PCA"
+FCM_CV_PCA_k4,0.544,0.1739,0.1,0.9538,"FPC=0.7074, full dataset (no CV), CV_PCA"
+FCM_CV_PCA_k5,0.584,0.381,0.2667,0.8769,"FPC=0.5688, full dataset (no CV), CV_PCA"
+FCM_CV_PCA_k6,0.568,0.325,0.2167,0.8923,"FPC=0.5455, full dataset (no CV), CV_PCA"

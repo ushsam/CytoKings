@@ -33,7 +33,7 @@ FIGURES_DIR.mkdir(parents=True, exist_ok=True)
 # ================================================================================
 # SECTION 1: DATA LOADING
 # ================================================================================
-df = pd.read_csv(DATA_DIR / "analysis_merged_subject_level.csv")
+df = pd.read_csv(DATA_DIR / "analysis_merged_subject_level_cell-type.csv")
 
 CYTO_COLS = [
     "IFN-gamma", "IL-12p70", "IL-13", "IL-1beta", "IL-2", "IL-4", "IL-5",
@@ -64,7 +64,7 @@ print("SECTION 1: DATASET SUMMARY  (cytokines + cell types)")
 print("=" * 65)
 print(f"  Total subjects    : {n_samples}")
 print(f"  Cytokine features : {len(CYTO_COLS)}")
-print(f"  Cell type features: {len(CELL_COLS)}")
+print(f"  Sample CT_ cols: {CELL_COLS[:5]}")
 print(f"  Total features    : {len(CYTO_COLS) + len(CELL_COLS)}")
 print(f"  Males             : {y.sum()}  ({100*y.sum()/n_samples:.1f}%)")
 print(f"  Females           : {(y==0).sum()}  ({100*(y==0).sum()/n_samples:.1f}%)")

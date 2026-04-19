@@ -1,0 +1,78 @@
+Feature,Male_Mean,Female_Mean,Diff (M-F),T_Stat,P_Value,Significant,Direction,Modality
+CT_Activated_Naive_Treg_cells,0.814,-0.0284,0.8424,4.0365,0.000117,True,↑ Male,Cell Type
+CT_Dendritic_cells_(Live_Scatter),0.2807,-0.1985,0.4792,3.8272,0.000205,True,↑ Male,Cell Type
+CT_Myeloid_DC_(Live_Scatter),0.3762,-0.1289,0.5051,3.6966,0.000336,True,↑ Male,Cell Type
+CT_Dendritic_cells_(Linneg),0.4004,-0.1034,0.5038,3.4309,0.000824,True,↑ Male,Cell Type
+CT_HLAnegDRneg_Naive_Treg_cells,0.4081,-0.0577,0.4658,3.4063,0.000924,True,↑ Male,Cell Type
+CT_T_follicular_helper_type_1,-0.2318,0.2375,-0.4693,-3.2902,0.001312,True,↑ Female,Cell Type
+CT_Treg_cells,0.3112,-0.1532,0.4643,3.2277,0.001603,True,↑ Male,Cell Type
+CT_HLAnegDRneg_Memory_Treg_cells,-0.1361,0.2746,-0.4107,-3.1551,0.00202,True,↑ Female,Cell Type
+CT_Transitional_B_cells,-0.0822,0.4023,-0.4845,-3.07,0.002758,True,↑ Female,Cell Type
+IL-21,0.1188,1.0865,-0.9677,-3.0722,0.002789,True,↑ Female,Cytokine
+CT_Plasmacytoid_DC_(Live_Scatter),0.3826,0.0038,0.3787,2.6994,0.008013,True,↑ Male,Cell Type
+CT_IgDnegCD27neg_B_cells,0.3746,-0.0071,0.3818,2.6433,0.009304,True,↑ Male,Cell Type
+CT_Activated_Effector_CD8pos_T_cells,0.1306,0.5485,-0.4179,-2.482,0.014746,True,↑ Female,Cell Type
+IL-22,0.2162,1.4918,-1.2757,-2.469,0.015767,True,↑ Female,Cytokine
+IL-23,-0.0495,0.3117,-0.3612,-2.2923,0.024294,True,↑ Female,Cytokine
+IL-9,0.2783,0.8442,-0.5659,-2.2361,0.027596,True,↑ Female,Cytokine
+IL-27,0.3367,1.2967,-0.9599,-2.1195,0.03688,True,↑ Female,Cytokine
+CT_T_follicular_helper_type_17,0.1051,-0.1529,0.258,2.0907,0.03863,True,↑ Male,Cell Type
+IL-13,0.2603,0.9173,-0.657,-2.0875,0.039866,True,↑ Female,Cytokine
+IL-17A,0.0294,0.5856,-0.5562,-1.9285,0.056718,False,↑ Female,Cytokine
+CT_Activated_Effector_Memory_CD8pos_T_cells,0.0404,0.3468,-0.3064,-1.885,0.062228,False,↑ Female,Cell Type
+IL-6,-0.3947,0.3917,-0.7863,-1.7999,0.074494,False,↑ Female,Cytokine
+CT_Average_Lymphocytes,-0.3095,-0.0322,-0.2773,-1.7792,0.077857,False,↑ Female,Cell Type
+CT_Plasma_cells,0.4343,0.1824,0.2519,1.718,0.088419,False,↑ Male,Cell Type
+IL-12p70,-0.1466,0.5436,-0.6901,-1.563,0.121905,False,↑ Female,Cytokine
+GM-CSF,0.8035,1.6991,-0.8956,-1.5027,0.136016,False,↑ Female,Cytokine
+IL-4,0.4932,0.99,-0.4968,-1.489,0.14047,False,↑ Female,Cytokine
+CT_Myeloid_DC_(DC),0.0792,-0.114,0.1932,1.4562,0.147892,False,↑ Male,Cell Type
+IL-18,0.214,0.0157,0.1982,1.4513,0.149246,False,↑ Male,Cytokine
+CT_T_follicular_helper_type_2,0.1733,-0.0044,0.1777,1.379,0.170392,False,↑ Male,Cell Type
+CT_Activated_CD8pos_T_cells,0.1851,0.4007,-0.2156,-1.3102,0.192635,False,↑ Female,Cell Type
+CT_Central_Memory_CD8pos_T_cells,0.2405,0.063,0.1775,1.2965,0.197561,False,↑ Male,Cell Type
+IL-10,0.147,0.4865,-0.3395,-1.2582,0.211802,False,↑ Female,Cytokine
+CT_Naive_B_cells,-0.2565,-0.0868,-0.1697,-1.1857,0.238066,False,↑ Female,Cell Type
+IFN-gamma,0.1633,0.0132,0.1501,1.1398,0.256594,False,↑ Male,Cytokine
+IL-5,0.6685,1.2394,-0.5709,-1.0657,0.288732,False,↑ Female,Cytokine
+CT_IgDpos_Memory_B_cells,0.1237,0.2798,-0.1561,-1.0655,0.288869,False,↑ Female,Cell Type
+CT_B_cells,0.0792,0.2318,-0.1526,-1.0282,0.306145,False,↑ Female,Cell Type
+CT_CD16negCD56pos_NK_cells,0.3649,0.1699,0.195,1.0166,0.311373,False,↑ Male,Cell Type
+CT_Plasmablasts,0.3761,0.2056,0.1705,0.9789,0.329573,False,↑ Male,Cell Type
+CT_Monocytes,-0.0001,0.1081,-0.1082,-0.9744,0.331796,False,↑ Female,Cell Type
+CT_T_follicular_helper,0.1278,-0.0136,0.1414,0.9717,0.333133,False,↑ Male,Cell Type
+IL-1beta,0.132,0.3329,-0.2009,-0.9571,0.341005,False,↑ Female,Cytokine
+IL-2,0.5372,1.2585,-0.7213,-0.9291,0.354821,False,↑ Female,Cytokine
+CT_Activated_Naive_CD4pos_T_cells,0.2674,0.1395,0.1279,0.8863,0.377296,False,↑ Male,Cell Type
+CT_Activated_Naive_CD8pos_T_cells,0.3687,0.2432,0.1255,0.8689,0.386619,False,↑ Male,Cell Type
+CT_Naive_CD4pos_T_cells,-0.0084,0.0808,-0.0892,-0.8387,0.40327,False,↑ Female,Cell Type
+CT_Activated_Central_Memory_CD4pos_T_cells,0.2001,0.0918,0.1083,0.8166,0.415758,False,↑ Male,Cell Type
+CT_Central_Memory_CD4pos_T_cells,-0.0234,-0.1263,0.1029,0.7998,0.425395,False,↑ Male,Cell Type
+CT_Effector_Treg_cells,-0.0749,0.0333,-0.1082,-0.7771,0.438603,False,↑ Female,Cell Type
+CT_Effector_Memory_CD8pos_T_cells,0.0235,0.1062,-0.0826,-0.7476,0.456205,False,↑ Female,Cell Type
+CT_Naive_CD8pos_T_cells,-0.0458,0.0257,-0.0715,-0.6816,0.496797,False,↑ Female,Cell Type
+CT_IgDneg_Memory_B_cells,0.1396,0.0529,0.0867,0.639,0.524002,False,↑ Male,Cell Type
+TNF-alpha,0.3645,0.5392,-0.1747,-0.6265,0.532237,False,↑ Female,Cytokine
+CT_NK_cells,0.1023,0.1866,-0.0843,-0.6105,0.542764,False,↑ Female,Cell Type
+CT_CD16posCD56neg_NK_cells,0.1904,0.3037,-0.1133,-0.6082,0.544206,False,↑ Female,Cell Type
+CT_Effector_CD8pos_T_cells,0.1848,0.1135,0.0713,0.5989,0.550399,False,↑ Male,Cell Type
+CT_CD11cposCD123pos_DC_(DC),0.424,0.5418,-0.1177,-0.578,0.564349,False,↑ Female,Cell Type
+CT_CD16posCD56pos_NK_cells,-0.2277,-0.1518,-0.0758,-0.5665,0.572103,False,↑ Female,Cell Type
+CT_Effector_CD4pos_T_cells,0.6869,0.5297,0.1572,0.5644,0.573681,False,↑ Male,Cell Type
+CT_T_follicular_regulatory,0.1853,0.1021,0.0832,0.5251,0.600477,False,↑ Male,Cell Type
+CT_CD16posCD14neg_Monocytes,0.1425,0.2135,-0.071,-0.5222,0.60254,False,↑ Female,Cell Type
+CT_Average_T_cells,-0.0527,0.0085,-0.0612,-0.504,0.615206,False,↑ Female,Cell Type
+CT_Average_CD4pos_T_cells,-0.0345,0.0187,-0.0532,-0.4312,0.667046,False,↑ Female,Cell Type
+CT_Plasmacytoid_DC_(DC),0.0887,0.1369,-0.0482,-0.4089,0.683322,False,↑ Female,Cell Type
+CT_Classical_Monocytes,-0.0561,-0.1068,0.0507,0.3476,0.728746,False,↑ Male,Cell Type
+CT_Activated_T_follicular_helper,0.1453,0.1842,-0.0388,-0.2801,0.77991,False,↑ Female,Cell Type
+CT_Activated_Effector_Memory_CD4pos_T_cells,0.1224,0.1652,-0.0428,-0.2573,0.797434,False,↑ Female,Cell Type
+CT_Medium_Activated_T_follicular_helper,0.0983,0.1269,-0.0286,-0.222,0.824645,False,↑ Female,Cell Type
+CT_Activated_Effector_CD4pos_T_cells,0.1714,0.2008,-0.0294,-0.2214,0.825142,False,↑ Female,Cell Type
+CT_Effector_Memory_CD4pos_T_cells,0.1699,0.1413,0.0286,0.1733,0.862697,False,↑ Male,Cell Type
+CT_CD8pos_T_cells,0.0466,0.0754,-0.0289,-0.1694,0.865767,False,↑ Female,Cell Type
+CT_Activated_Central_Memory_CD8pos_T_cells,0.2566,0.2773,-0.0208,-0.132,0.895201,False,↑ Female,Cell Type
+CT_Activated_CD4pos_T_cells,0.1701,0.1547,0.0154,0.0929,0.926163,False,↑ Male,Cell Type
+CT_Activated_Memory_Treg_cells,0.0412,0.0339,0.0073,0.052,0.958642,False,↑ Male,Cell Type
+CT_CD14pos_Monocytes,-0.1205,-0.1134,-0.0071,-0.0471,0.96252,False,↑ Female,Cell Type
+CT_CD11cposCD123pos_DC_(Live_Scatter),0.6122,0.6208,-0.0086,-0.0323,0.974295,False,↑ Female,Cell Type

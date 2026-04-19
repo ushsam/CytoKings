@@ -1,78 +1,78 @@
 Feature,Importance,Std,Modality
-GM-CSF,0.218347,0.005576,Cytokine
-IL-4,0.217572,0.008158,Cytokine
-IL-2,0.217459,0.004844,Cytokine
-IL-17A,0.217202,0.008835,Cytokine
-IL-5,0.216824,0.002696,Cytokine
-IL-1beta,0.215716,0.009137,Cytokine
-IL-13,0.215379,0.009653,Cytokine
-IL-12p70,0.212772,0.005051,Cytokine
-TNF-alpha,0.210334,0.00825,Cytokine
-IL-9,0.209398,0.010238,Cytokine
-IL-6,0.209318,0.007962,Cytokine
-IL-23,0.208784,0.002961,Cytokine
-IL-10,0.207618,0.01226,Cytokine
-IL-22,0.20313,0.004516,Cytokine
-IL-27,0.200368,0.003743,Cytokine
-IL-21,0.195834,0.008722,Cytokine
-IFN-gamma,0.180204,0.005672,Cytokine
-IL-18,0.170791,0.004093,Cytokine
-CT_Dendritic_cells_(Linneg),0.0745,0.004027,Cell Type
-CT_Dendritic_cells_(Live_Scatter),0.073758,0.004502,Cell Type
-CT_Classical_Monocytes,0.073124,0.00706,Cell Type
-CT_CD16posCD14neg_Monocytes,0.07207,0.002746,Cell Type
-CT_CD14pos_Monocytes,0.07095,0.008334,Cell Type
-CT_Activated_CD8pos_T_cells,0.070085,0.003742,Cell Type
-CT_Central_Memory_CD8pos_T_cells,0.069427,0.004125,Cell Type
-CT_Central_Memory_CD4pos_T_cells,0.068785,0.004709,Cell Type
-CT_HLAnegDRneg_Naive_Treg_cells,0.068704,0.006265,Cell Type
-CT_Naive_CD8pos_T_cells,0.066799,0.003841,Cell Type
-CT_Average_T_cells,0.065975,0.006537,Cell Type
-CT_Myeloid_DC_(Live_Scatter),0.065003,0.005338,Cell Type
-CT_Effector_Memory_CD4pos_T_cells,0.064764,0.003097,Cell Type
-CT_CD16posCD56pos_NK_cells,0.064695,0.005791,Cell Type
-CT_Effector_CD8pos_T_cells,0.064561,0.001375,Cell Type
-CT_Activated_Effector_CD8pos_T_cells,0.064495,0.003508,Cell Type
-CT_Activated_CD4pos_T_cells,0.063967,0.00378,Cell Type
-CT_NK_cells,0.0637,0.003144,Cell Type
-CT_Activated_Central_Memory_CD4pos_T_cells,0.06357,0.003259,Cell Type
-CT_Activated_Central_Memory_CD8pos_T_cells,0.063247,0.002408,Cell Type
-CT_Plasmacytoid_DC_(Live_Scatter),0.062963,0.00296,Cell Type
-CT_Naive_CD4pos_T_cells,0.062286,0.004143,Cell Type
-CT_Activated_Naive_Treg_cells,0.061857,0.001868,Cell Type
-CT_Activated_Naive_CD8pos_T_cells,0.061696,0.003462,Cell Type
-CT_Activated_Effector_Memory_CD4pos_T_cells,0.061286,0.003417,Cell Type
-CT_Plasma_cells,0.061255,0.004701,Cell Type
-CT_Activated_Naive_CD4pos_T_cells,0.061078,0.004492,Cell Type
-CT_T_follicular_helper_type_1,0.060763,0.004061,Cell Type
-CT_Activated_Effector_Memory_CD8pos_T_cells,0.060604,0.002514,Cell Type
-CT_T_follicular_helper_type_17,0.060342,0.003716,Cell Type
-CT_IgDneg_Memory_B_cells,0.058995,0.005972,Cell Type
-CT_Naive_B_cells,0.058795,0.003712,Cell Type
-CT_Effector_Treg_cells,0.058762,0.006941,Cell Type
-CT_CD11cposCD123pos_DC_(Live_Scatter),0.057867,0.010199,Cell Type
-CT_Plasmablasts,0.057307,0.006598,Cell Type
-CT_Monocytes,0.057221,0.006418,Cell Type
-CT_Effector_Memory_CD8pos_T_cells,0.056871,0.003858,Cell Type
-CT_CD16negCD56pos_NK_cells,0.056861,0.005482,Cell Type
-CT_Plasmacytoid_DC_(DC),0.056365,0.003383,Cell Type
-CT_T_follicular_helper,0.055884,0.004662,Cell Type
-CT_IgDnegCD27neg_B_cells,0.055619,0.001765,Cell Type
-CT_Activated_Memory_Treg_cells,0.055571,0.002071,Cell Type
-CT_IgDpos_Memory_B_cells,0.055399,0.00371,Cell Type
-CT_Activated_T_follicular_helper,0.054528,0.005749,Cell Type
-CT_CD16posCD56neg_NK_cells,0.053509,0.002172,Cell Type
-CT_Transitional_B_cells,0.053002,0.002795,Cell Type
-CT_CD11cposCD123pos_DC_(DC),0.052698,0.01157,Cell Type
-CT_Effector_CD4pos_T_cells,0.052433,0.002604,Cell Type
-CT_HLAnegDRneg_Memory_Treg_cells,0.051324,0.003168,Cell Type
-CT_B_cells,0.050648,0.002166,Cell Type
-CT_Activated_Effector_CD4pos_T_cells,0.049507,0.001815,Cell Type
-CT_Average_Lymphocytes,0.047484,0.005525,Cell Type
-CT_T_follicular_helper_type_2,0.044744,0.003758,Cell Type
-CT_Myeloid_DC_(DC),0.043079,0.00801,Cell Type
-CT_Treg_cells,0.04225,0.002862,Cell Type
-CT_CD8pos_T_cells,0.04125,0.008281,Cell Type
-CT_T_follicular_regulatory,0.038958,0.005934,Cell Type
-CT_Average_CD4pos_T_cells,0.037588,0.006443,Cell Type
-CT_Medium_Activated_T_follicular_helper,0.033539,0.006632,Cell Type
+GM-CSF,0.216346,0.008668,Cytokine
+IL-5,0.213453,0.00426,Cytokine
+IL-4,0.212024,0.009976,Cytokine
+IL-1beta,0.208851,0.007512,Cytokine
+IL-12p70,0.208004,0.005461,Cytokine
+IL-13,0.207221,0.012435,Cytokine
+IL-17A,0.207035,0.014059,Cytokine
+IL-2,0.203645,0.009298,Cytokine
+IL-10,0.203288,0.010937,Cytokine
+TNF-alpha,0.201727,0.010699,Cytokine
+IL-6,0.201424,0.009063,Cytokine
+IL-9,0.201186,0.011618,Cytokine
+IL-23,0.200919,0.014654,Cytokine
+IL-22,0.198082,0.011211,Cytokine
+IL-27,0.195722,0.005226,Cytokine
+IL-21,0.191443,0.015918,Cytokine
+IFN-gamma,0.180297,0.008175,Cytokine
+IL-18,0.167257,0.004272,Cytokine
+CT_Classical_Monocytes,0.067115,0.002889,Cell Type
+CT_Activated_CD8pos_T_cells,0.066312,0.002757,Cell Type
+CT_CD16posCD14neg_Monocytes,0.065195,0.001952,Cell Type
+CT_CD14pos_Monocytes,0.065042,0.003571,Cell Type
+CT_Dendritic_cells_Live_Scatter,0.062696,0.004164,Cell Type
+CT_Activated_Central_Memory_CD4pos_T_cells,0.061431,0.001862,Cell Type
+CT_Dendritic_cells_Linneg,0.061191,0.005163,Cell Type
+CT_HLAnegDRneg_Naive_Treg_cells,0.060803,0.007644,Cell Type
+CT_Activated_Effector_CD8pos_T_cells,0.06059,0.004159,Cell Type
+CT_Naive_CD8pos_T_cells,0.059661,0.006179,Cell Type
+CT_Myeloid_DC_Live_Scatter,0.057928,0.005143,Cell Type
+CT_Activated_CD4pos_T_cells,0.057848,0.005939,Cell Type
+CT_Activated_Central_Memory_CD8pos_T_cells,0.057816,0.002025,Cell Type
+CT_Naive_CD4pos_T_cells,0.05682,0.001829,Cell Type
+CT_Central_Memory_CD8pos_T_cells,0.056456,0.005406,Cell Type
+CT_Activated_Effector_Memory_CD4pos_T_cells,0.055798,0.002704,Cell Type
+CT_Activated_Effector_Memory_CD8pos_T_cells,0.055638,0.003531,Cell Type
+CT_Effector_Treg_cells,0.05345,0.003569,Cell Type
+CT_Activated_Naive_Treg_cells,0.052678,0.005629,Cell Type
+CT_T_follicular_helper_type_1,0.052055,0.002624,Cell Type
+CT_Activated_Memory_Treg_cells,0.051896,0.003991,Cell Type
+CT_Activated_Naive_CD8pos_T_cells,0.051864,0.003738,Cell Type
+CT_T_follicular_helper_type_17,0.051662,0.00263,Cell Type
+CT_IgDnegCD27neg_B_cells,0.05127,0.001793,Cell Type
+CT_Activated_Naive_CD4pos_T_cells,0.050911,0.00128,Cell Type
+CT_Central_Memory_CD4pos_T_cells,0.049346,0.002362,Cell Type
+CT_Plasmacytoid_DC_Live_Scatter,0.049217,0.005678,Cell Type
+CT_Effector_CD8pos_T_cells,0.048,0.004368,Cell Type
+CT_Plasmacytoid_DC_DC,0.046948,0.003273,Cell Type
+CT_IgDpos_Memory_B_cells,0.04689,0.002869,Cell Type
+CT_Naive_B_cells,0.046453,0.007186,Cell Type
+CT_HLAnegDRneg_Memory_Treg_cells,0.046027,0.001957,Cell Type
+CT_Monocytes,0.045589,0.004127,Cell Type
+CT_Effector_Memory_CD8pos_T_cells,0.045366,0.003459,Cell Type
+CT_Activated_T_follicular_helper,0.045322,0.003825,Cell Type
+CT_Average_T_cells,0.044265,0.005054,Cell Type
+CT_Effector_Memory_CD4pos_T_cells,0.043697,0.007294,Cell Type
+CT_T_follicular_helper,0.043274,0.003462,Cell Type
+CT_IgDneg_Memory_B_cells,0.042907,0.00874,Cell Type
+CT_Transitional_B_cells,0.042714,0.003258,Cell Type
+CT_CD11cposCD123pos_DC_Live_Scatter,0.042503,0.006888,Cell Type
+CT_CD16posCD56neg_NK_cells,0.040609,0.004248,Cell Type
+CT_B_cells,0.04053,0.00542,Cell Type
+CT_Average_Lymphocytes,0.040321,0.005045,Cell Type
+CT_Plasma_cells,0.038794,0.004947,Cell Type
+CT_Activated_Effector_CD4pos_T_cells,0.038489,0.003958,Cell Type
+CT_CD16posCD56pos_NK_cells,0.037617,0.003348,Cell Type
+CT_Plasmablasts,0.037594,0.00654,Cell Type
+CT_CD11cposCD123pos_DC_DC,0.037474,0.009044,Cell Type
+CT_NK_cells,0.037398,0.006786,Cell Type
+CT_Effector_CD4pos_T_cells,0.035113,0.004958,Cell Type
+CT_CD16negCD56pos_NK_cells,0.0348,0.009877,Cell Type
+CT_T_follicular_helper_type_2,0.034404,0.004579,Cell Type
+CT_Treg_cells,0.033244,0.0055,Cell Type
+CT_T_follicular_regulatory,0.029275,0.006345,Cell Type
+CT_Medium_Activated_T_follicular_helper,0.028558,0.00375,Cell Type
+CT_Myeloid_DC_DC,0.028387,0.006595,Cell Type
+CT_CD8pos_T_cells,0.027716,0.005036,Cell Type
+CT_Average_CD4pos_T_cells,0.027201,0.003903,Cell Type

@@ -1,0 +1,13 @@
+Feature,Importance,Modality
+CT_T_follicular_helper_type_1,0.14400618,Cell Type
+CT_Activated_Naive_Treg_cells,0.1358886,Cell Type
+IL-21,0.11467266,Cytokine
+CT_Dendritic_cells_(Live_Scatter),0.108914524,Cell Type
+CT_Myeloid_DC_(Live_Scatter),0.09989381,Cell Type
+CT_HLAnegDRneg_Naive_Treg_cells,0.07929449,Cell Type
+CT_Treg_cells,0.07809287,Cell Type
+CT_HLAnegDRneg_Memory_Treg_cells,0.07195604,Cell Type
+CT_Transitional_B_cells,0.0654267,Cell Type
+CT_IgDnegCD27neg_B_cells,0.048446953,Cell Type
+CT_Plasmacytoid_DC_(Live_Scatter),0.04102154,Cell Type
+CT_Dendritic_cells_(Linneg),0.012385662,Cell Type

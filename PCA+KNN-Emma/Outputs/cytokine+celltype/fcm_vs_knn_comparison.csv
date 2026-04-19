@@ -1,7 +1,7 @@
 Method,Accuracy,F1_Score,Sensitivity,Specificity,Notes
-"KNN (PCA=7/mod, K=5)",0.664,0.6613,0.6508,0.6774,"Cross-validated, combined cytokine + cell type PCs"
-Fuzzy C-Means (k=2),0.552,0.5254,0.4921,0.6129,"FPC=0.5000, full dataset (no CV), combined PCA space"
-Fuzzy C-Means (k=3),0.528,0.5496,0.5714,0.4839,"FPC=0.3333, full dataset (no CV), combined PCA space"
-Fuzzy C-Means (k=4),0.536,0.6234,0.7619,0.3065,"FPC=0.2500, full dataset (no CV), combined PCA space"
-Fuzzy C-Means (k=5),0.536,0.5323,0.5238,0.5484,"FPC=0.2000, full dataset (no CV), combined PCA space"
-Fuzzy C-Means (k=6),0.528,0.6144,0.746,0.3065,"FPC=0.1667, full dataset (no CV), combined PCA space"
+"KNN (PCA=5/mod, K=7)",0.696,0.7077,0.7302,0.6613,"Cross-validated, combined cytokine + cell type PCs"
+Fuzzy C-Means (k=2),0.584,0.5593,0.5238,0.6452,"FPC=0.5000, full dataset (no CV), combined PCA space"
+Fuzzy C-Means (k=3),0.584,0.5517,0.5079,0.6613,"FPC=0.3333, full dataset (no CV), combined PCA space"
+Fuzzy C-Means (k=4),0.576,0.5047,0.4286,0.7258,"FPC=0.2500, full dataset (no CV), combined PCA space"
+Fuzzy C-Means (k=5),0.584,0.5806,0.5714,0.5968,"FPC=0.2000, full dataset (no CV), combined PCA space"
+Fuzzy C-Means (k=6),0.584,0.5,0.4127,0.7581,"FPC=0.1667, full dataset (no CV), combined PCA space"

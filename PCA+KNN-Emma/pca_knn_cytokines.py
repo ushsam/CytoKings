@@ -18,7 +18,7 @@ from pathlib import Path
 # PATHS
 # ================================================================================
 BASE_DIR    = Path(__file__).resolve().parent.parent
-DATA_DIR    = BASE_DIR / "Data"
+DATA_DIR    = BASE_DIR / "Data-Emma"
 OUTPUT_DIR  = BASE_DIR / "PCA+KNN-Emma" / "Outputs" / "cytokines_only"
 FIGURES_DIR = OUTPUT_DIR / "figures"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -792,8 +792,6 @@ fig.suptitle(
 gs = gridspec.GridSpec(2, 3, figure=fig, hspace=0.42, wspace=0.38)
 
 # Panel A: Scree plot
-# Panel A: Global PCA — PC1 vs PC2 colored by sex
-# Panel A: Scree plot (log-transformed data)
 ax_a = fig.add_subplot(gs[0, 0])
 x_pcs = range(1, len(explained_ratio_global) + 1)
 ax_a.bar(x_pcs, explained_ratio_global * 100, color=COLOR_BAR, alpha=0.7)
