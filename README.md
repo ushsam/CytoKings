@@ -34,7 +34,9 @@
 | Sex | Cytokines only | KNN | 56.8% | 0.591 |
 | Sex | Cytokines only | XGBoost (CV) | ~58% | ~0.58 |
 | Sex | Cytokines + Cell Types | KNN | 66.4% | 0.661 |
-| Age (binary) | Cytokines only | Logistic Regression | TBD | TBD |
+| Age (binary) | Cytokines only | Logistic Regression | 55.5% | 0.536 |
+| Age (binary) | Cytokines only | XGBoost | 49.6% | 0.432 |
+| Age (binary) | Cytokines only | KNN | 46.8% | 0.419 |
 | Age (4-class) | Cytokines only | XGBoost | ~27% | ~0.24 |
 
 **Random baseline**: 50% (binary), 25% (4-class)
@@ -42,6 +44,24 @@
 **Key finding**: Cell type composition adds ~10% accuracy over cytokines 
 alone for sex prediction. Fuzzy clustering confirms no sex-linked cluster 
 structure — KNN is better for sex prediction.
+
+### Age Prediction Notes
+
+Binary age classification (Young 18-39 vs Older 40-66) from resting cytokine 
+profiles is significantly harder than sex prediction:
+
+- **Logistic Regression** is the only model beating random baseline (55.5% vs 50%)
+- **XGBoost** performs at chance (49.6%) — overfits badly at n=125
+- **KNN** falls below chance (46.8%) — distance-based approach fails for age signal
+- **ROC-AUC = 0.597** (Logistic Regression) confirms a weak but real age signal
+
+Interpretation: Resting cytokine levels do not strongly differentiate age 
+in healthy adults without immune challenge. The logistic regression 
+coefficients in `results_lr_coefficients_age.csv` identify which cytokines 
+push toward older age — the more biologically meaningful finding.
+
+4-class age prediction (~27% vs 25% random) confirms the signal is too weak 
+to reliably distinguish between individual decade-based age groups.
 
 ---
 
