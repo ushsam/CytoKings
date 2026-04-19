@@ -1,172 +1,158 @@
-# Cytokine Expression Classification Pipeline (PCA + KNN)
+---
 
-## Objective
+## Pipeline Overview
 
-This pipeline evaluates whether cytokine expression patterns can predict biological sex and identifies key immune signals driving class separation.
+### Step 1: Data Preparation
+- Merge cytokine MFI values with cell type proportions and demographics
+- One row per subject, one column per feature
+- Log1p transform on cytokines to reduce right skew
+- Median imputation for missing cell type values
 
-It also produces clean, reusable datasets for benchmarking advanced machine learning models.
+### Step 2: EDA + Global PCA
+- Scree plot, variance explained, PC loadings
+- PC1 = Global Inflammation (57.8%), PC2 = Th17/Regulatory (13.9%)
+- Cytokine expression by sex with Welch's t-test
 
-## Full Pipeline Overview
-
-- Data loading and validation
-- Z-score standardization
-- PCA (dimensionality reduction)
-- KNN classification
+### Step 3: PCA + KNN Classification
+- Separate PCAs per modality (cytokines and cell types)
+- Grid search over PCA components (2–10) and K (3–7)
 - Stratified 5-fold cross-validation
-- Grid search over PCA components and K
-- Feature importance estimation
-- Visualization panel generation
-- Downstream data export (core deliverable)
+- Soft clustering (Fuzzy C-Means) comparison
 
-## Downstream Data Export (Important)
+### Step 4–7: XGBoost + Multiple Models (In Progress)
+- XGBoost, Random Forest, Logistic Regression, SVM, Ensemble
+- Feature importance analysis
+- Logistic Regression coefficients for interpretability
+- Sex-stratified analysis
 
-This section defines exact files used by other models.
+---
 
-After running the pipeline, the following files are generated:
+## Key Results
 
-### 1. Core ML Inputs (Used by All Downstream Models)
+| Target | Features | Method | Accuracy | F1 |
+|--------|----------|--------|----------|----|
+| Sex | Cytokines only | KNN | 56.8% | 0.591 |
+| Sex | Cytokines only | XGBoost (CV) | ~58% | ~0.58 |
+| Sex | Cytokines + Cell Types | KNN | 66.4% | 0.661 |
+| Age (binary) | Cytokines only | Logistic Regression | TBD | TBD |
+| Age (4-class) | Cytokines only | XGBoost | ~27% | ~0.24 |
 
-These are the primary files other models should load.
+**Random baseline**: 50% (binary), 25% (4-class)
 
-#### X_processed.npy
+**Key finding**: Cell type composition adds ~10% accuracy over cytokines 
+alone for sex prediction. Fuzzy clustering confirms no sex-linked cluster 
+structure — KNN is better for sex prediction.
 
-- Shape: (n_samples, n_features)
-- Description: Standardized cytokine expression matrix
+---
 
-Used for:
-- XGBoost
-- SVM
-- Random Forest
-- Logistic Regression
-- Neural Networks
+## Running the Pipelines
 
-```python
-X = np.load("X_processed.npy")
+### 1. Data Preparation
+```bash
+cd Data-Emma
+python data-prep-fix-subject.py   # generates analysis_merged_subject_level_new.csv
 ```
 
-#### y_labels.npy
-
-- Shape: (n_samples,)
-- Description: Binary classification labels
-  - 1 = Male
-  - 0 = Female
-
-Used for all supervised learning tasks:
-
-```python
-y = np.load("y_labels.npy")
+### 2. PCA + KNN (Cytokines Only — Sex)
+```bash
+cd PCA+KNN-Emma
+python pca_knn_cytokines.py
 ```
 
-### 2. Dimensionality-Reduced Input (Optional Feature Set)
-
-#### X_pca_best.npy
-
-- Shape: (n_samples, best_n_pca)
-- Description: PCA-transformed feature space using optimal configuration
-
-Used for:
-- Faster training models
-- Linear classifiers
-- Visualization-based ML
-- Low-dimensional embeddings
-
-```python
-X_pca = np.load("X_pca_best.npy")
+### 3. PCA + KNN (Cytokines + Cell Types — Sex)
+```bash
+python pca_knn_cytokine+celltype.py
 ```
 
-### 3. PCA Model Parameters (For Reproducibility)
-
-#### pca_components.npy
-
-- Shape: (best_n_pca, n_features)
-- Description: PCA projection matrix learned from full dataset
-
-Used for:
-- Reconstructing PCA transformation
-- Applying identical feature mapping to new data
-
-```python
-components = np.load("pca_components.npy")
+### 4. PCA + KNN (Cytokines Only — Binary Age)
+```bash
+python AGE-pca_knn_cytokines.py
 ```
 
-### 4. Benchmarking and Interpretability Files
+### 5. XGBoost Pipelines
+```bash
+cd XGBoost/cytokine-only/sex
+python xgboost_pipeline_sex.py
 
-#### results_summary.csv
+cd XGBoost/sex/sex_enhanced
+python xgboost_enhanced.py
 
-Contains:
-- PCA components tested
-- K values tested
-- Cross-validation accuracy (mean and standard deviation)
+cd XGBoost/celltype+cytokine/sex
+python binary-classification-cytokine+celltypes.py
 
-Used for:
-- Model benchmarking
-- Hyperparameter comparison
-- Reproducibility audits
-
-#### feature_importance.csv
-
-Columns:
-- Cytokine name
-- Importance score (variance-weighted PCA loadings)
-
-Used for:
-- Biological interpretation
-- Feature selection
-- Biomarker discovery
-
-## Downstream Usage Protocol
-
-### Step 1: Load core data
-
-```python
-X = np.load("X_processed.npy")
-y = np.load("y_labels.npy")
+cd XGBoost/age
+python complete_pipeline_age_prediction.py        # 4-class
+python xgboost-binary-age-pipeline.py            # binary
 ```
 
-### Step 2: Train any model
+---
 
-Examples: XGBoost, SVM, Random Forest
+## Exported Data Files
 
-- Perform your own train/test split or cross-validation
-- IMPORTANT: re-standardize within each fold
+All pipelines export to their respective `Outputs/` folders.
 
-### Step 3: Optional PCA usage
+### Core ML Inputs
+
+| File | Shape | Description |
+|------|-------|-------------|
+| `X_processed.npy` | (125, 18) | Standardized cytokines |
+| `X_pca_best.npy` | (125, n_pca) | PCA-reduced features |
+| `y_labels.npy` | (125,) | Binary labels (1=Male/Older, 0=Female/Young) |
+| `pca_components.npy` | (n_pca, n_features) | PCA projection matrix |
+| `X_combined_pca.npy` | (125, 14) | Combined cytokine + cell type PCs |
+| `X_cytokines_processed.npy` | (125, 18) | Standardized cytokines (full pipeline) |
+| `X_cell_processed.npy` | (125, 59) | Standardized cell types |
+
+### Results Files
+
+| File | Description |
+|------|-------------|
+| `results_summary.csv` | CV accuracy across all hyperparameter combos |
+| `feature_importance.csv` | Variance-weighted PCA loadings per feature |
+| `cytokine_sex_comparison.csv` | Welch's t-test results, cytokines by sex |
+| `celltype_sex_comparison.csv` | Welch's t-test results, cell types by sex |
+| `fcm_vs_knn_comparison.csv` | Fuzzy C-Means vs KNN accuracy comparison |
+| `pca_loadings_global.csv` | Global PCA loadings for PC1–PC3 |
+
+---
+
+## Loading Data in Downstream Models
 
 ```python
-X_pca = np.load("X_pca_best.npy")
+import numpy as np
+from pathlib import Path
+
+BASE_DIR = Path("PCA+KNN-Emma/Outputs/cytokines_only")
+
+X = np.load(BASE_DIR / "X_processed.npy")   # standardized cytokines
+y = np.load(BASE_DIR / "y_labels.npy")       # binary labels
 ```
 
-Use when:
-- Reducing dimensionality
-- Improving training speed
-- Avoiding high-dimensional noise
+**Important**: `X_processed.npy` is globally standardized.
+Re-standardize within each cross-validation fold for any new model.
+
+---
 
 ## Critical Notes
 
-- X_processed.npy is already globally standardized  
-  -> Must be re-standardized inside cross-validation for any new model  
+- **Fuzzy clustering** confirms no sex-linked cluster structure in cytokine 
+  space — the KNN signal requires a supervised approach to detect
+- **57% on cytokines alone** is informative, not a failure — it means resting 
+  cytokine secretion doesn't strongly differentiate sex at baseline
+- **66% with cell types** is the key finding — immune cell composition carries 
+  sex signal that cytokine secretion alone misses
+- **Age prediction** is harder than sex — 4-class accuracy near random baseline 
+  suggests cytokines alone do not strongly predict age in healthy donors
+- **ROC-AUC = 1.0** in some XGBoost outputs is a training-set artifact — 
+  always use cross-validated metrics for honest evaluation
 
-- PCA transformation is provided for consistency  
-  -> Downstream models may recompute PCA independently  
-
-- Cross-validation strategy in this pipeline is a reference-only baseline  
-
-## Baseline Performance Reference
-
-Use this pipeline as a benchmark:
-
-- Accuracy
-- Balanced Accuracy
-- Sensitivity
-- Specificity
-- F1 Score
-
-All downstream models should report performance relative to this baseline.
+---
 
 ## Design Philosophy
 
-- No black-box ML dependencies in core pipeline
+- No black-box ML dependencies in core PCA+KNN pipeline
 - Fully reproducible feature engineering
 - Strict separation between preprocessing and modeling
 - Explicit export layer for cross-model compatibility
 - Biological interpretability prioritized via cytokine importance ranking
+- Separate PCA per modality prevents cell type count from dominating variance
