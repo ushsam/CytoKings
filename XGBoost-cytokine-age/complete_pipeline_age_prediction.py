@@ -28,9 +28,9 @@ warnings.filterwarnings('ignore')
 # PATHS
 # ============================================================================
 
-BASE_DIR    = Path(__file__).resolve().parent.parent.parent.parent
+BASE_DIR    = Path(__file__).resolve().parent.parent
 DATA_DIR    = BASE_DIR / "Data"
-OUTPUT_DIR  = BASE_DIR / "XGBoost" / "cytokine-only"/"age"/ "Outputs" / "complete_age_predict" 
+OUTPUT_DIR  = BASE_DIR / "XGBoost-cytokine-age"/ "Outputs" / "complete_age_predict" 
 FIGURES_DIR = OUTPUT_DIR / "figures"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 FIGURES_DIR.mkdir(parents=True, exist_ok=True)

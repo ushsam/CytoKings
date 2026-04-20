@@ -169,7 +169,7 @@ SUMMARY — SEXC CLASSIFICATION RESULTS
    2. IL-17A (0.098)
    3. GM-CSF (0.098)
 
-📁 All outputs saved to: /Users/emmafranken/Desktop/School/CMU/machine learning/CytoKings/XGBoost/final-sex-outputs
+📁 All outputs saved to: /Users/emmafranken/Desktop/School/CMU/machine learning/CytoKings/XGBoost-cytokine-sex/final-sex-outputs
 
 ================================================================================
 ✓ Pipeline completed successfully!

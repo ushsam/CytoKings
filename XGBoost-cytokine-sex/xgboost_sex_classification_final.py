@@ -41,8 +41,10 @@ from pathlib import Path
 BASE_DIR       = Path(__file__).resolve().parent.parent
 
 DATA_PATH   = BASE_DIR / "Data" / "analysis_merged_subject_level.csv"
-OUTPUT_DIR     = BASE_DIR / "XGBoost" / "final-sex-outputs"
+OUTPUT_DIR     = BASE_DIR / "XGBoost-cytokine-sex" / "final-sex-outputs"
+FIGURES_DIR = OUTPUT_DIR / "figures"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+FIGURES_DIR.mkdir(parents=True, exist_ok=True)
 
 # Columns to use as features. Set to None to auto-detect all numeric columns.
 FEATURE_COLUMNS = [
@@ -397,7 +399,7 @@ ax8.set_ylim(0.4, 0.8)
 ax8.grid(axis='y', alpha=0.3)
 plt.setp(ax8.xaxis.get_majorticklabels(), rotation=45, ha='right')
  
-plt.savefig(OUTPUT_DIR / 'sex_classification_comprehensive_results.png', dpi=300, bbox_inches='tight')
+plt.savefig(FIGURES_DIR / 'sex_classification_comprehensive_results.png', dpi=300, bbox_inches='tight')
 print("✓ Saved: Outputs/sex_classification_comprehensive_results.png")
 plt.close()
  
@@ -416,7 +418,7 @@ if SAVE_INDIVIDUAL_PANELS:
     for i, v in enumerate(acc_means):
         ax.text(v + 0.01, i, f'{v:.3f}', va='center', fontsize=10)
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / 'panel_1_model_accuracy.png', dpi=300, bbox_inches='tight')
+    plt.savefig(FIGURES_DIR / 'panel_1_model_accuracy.png', dpi=300, bbox_inches='tight')
     plt.close()
     print("✓ Saved: Outputs/panel_1_model_accuracy.png")
  
@@ -429,7 +431,7 @@ if SAVE_INDIVIDUAL_PANELS:
     ax.set_title('Top 10 Most Important Features (XGBoost)', fontsize=12, fontweight='bold')
     ax.invert_yaxis()
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / 'panel_2_feature_importance.png', dpi=300, bbox_inches='tight')
+    plt.savefig(FIGURES_DIR / 'panel_2_feature_importance.png', dpi=300, bbox_inches='tight')
     plt.close()
     print("✓ Saved: Outputs/panel_2_feature_importance.png")
  
@@ -442,7 +444,7 @@ if SAVE_INDIVIDUAL_PANELS:
     ax.set_xlabel('Predicted Label')
     ax.set_title('XGBoost Confusion Matrix', fontsize=12, fontweight='bold')
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / 'panel_3_confusion_matrix.png', dpi=300, bbox_inches='tight')
+    plt.savefig(FIGURES_DIR / 'panel_3_confusion_matrix.png', dpi=300, bbox_inches='tight')
     plt.close()
     print("✓ Saved: Outputs/panel_3_confusion_matrix.png")
  
@@ -457,7 +459,7 @@ if SAVE_INDIVIDUAL_PANELS:
     ax.legend(loc='lower right')
     ax.grid(alpha=0.3)
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / 'panel_4_roc_curve.png', dpi=300, bbox_inches='tight')
+    plt.savefig(FIGURES_DIR / 'panel_4_roc_curve.png', dpi=300, bbox_inches='tight')
     plt.close()
     print("✓ Saved: Outputs/panel_4_roc_curve.png")
  
@@ -470,7 +472,7 @@ if SAVE_INDIVIDUAL_PANELS:
     for i, v in enumerate([n_neg, n_pos]):
         ax.text(i, v + 1, str(v), ha='center', fontsize=11, fontweight='bold')
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / 'panel_5_class_distribution.png', dpi=300, bbox_inches='tight')
+    plt.savefig(FIGURES_DIR / 'panel_5_class_distribution.png', dpi=300, bbox_inches='tight')
     plt.close()
     print("✓ Saved: Outputs/panel_5_class_distribution.png")
  
@@ -483,7 +485,7 @@ if SAVE_INDIVIDUAL_PANELS:
                 xticklabels=top3_names, yticklabels=['CV Accuracy'])
     ax.set_title('Top 3 Models Performance', fontsize=12, fontweight='bold')
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / 'panel_6_top3_heatmap.png', dpi=300, bbox_inches='tight')
+    plt.savefig(FIGURES_DIR / 'panel_6_top3_heatmap.png', dpi=300, bbox_inches='tight')
     plt.close()
     print("✓ Saved: Outputs/panel_6_top3_heatmap.png")
  
@@ -497,7 +499,7 @@ if SAVE_INDIVIDUAL_PANELS:
     ax.set_title(f'ANOVA Feature Selection ({n_sel}/{len(FEATURE_COLUMNS)} features)',
                  fontsize=12, fontweight='bold')
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / 'panel_7_feature_selection_pie.png', dpi=300, bbox_inches='tight')
+    plt.savefig(FIGURES_DIR / 'panel_7_feature_selection_pie.png', dpi=300, bbox_inches='tight')
     plt.close()
     print("✓ Saved: Outputs/panel_7_feature_selection_pie.png")
  
@@ -512,7 +514,7 @@ if SAVE_INDIVIDUAL_PANELS:
     ax.grid(axis='y', alpha=0.3)
     plt.setp(ax.xaxis.get_majorticklabels(), rotation=45, ha='right')
     plt.tight_layout()
-    plt.savefig(OUTPUT_DIR / 'panel_8_accuracy_by_model.png', dpi=300, bbox_inches='tight')
+    plt.savefig(FIGURES_DIR / 'panel_8_accuracy_by_model.png', dpi=300, bbox_inches='tight')
     plt.close()
     print("✓ Saved: Outputs/panel_8_accuracy_by_model.png")
  

@@ -20,9 +20,9 @@ warnings.filterwarnings('ignore')
 # ============================================================================
 # PATHS
 # ============================================================================
-BASE_DIR    = Path(__file__).resolve().parent.parent.parent.parent
+BASE_DIR    = Path(__file__).resolve().parent.parent
 DATA_DIR    = BASE_DIR / "Data"
-OUTPUT_DIR  = BASE_DIR / "XGBoost" / "cytokine-only"/"sex" /"Outputs"
+OUTPUT_DIR  = BASE_DIR / "XGBoost-cytokine-sex" / "old-binary-sex-outputs"
 FIGURES_DIR = OUTPUT_DIR / "figures"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 FIGURES_DIR.mkdir(parents=True, exist_ok=True)

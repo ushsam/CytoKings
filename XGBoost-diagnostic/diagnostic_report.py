@@ -22,13 +22,12 @@ print("="*90)
 # PATHS
 # ============================================================================
 
-BASE_DIR    = Path(__file__).resolve().parent.parent.parent.parent
+BASE_DIR    = Path(__file__).resolve().parent.parent
 DATA_DIR    = BASE_DIR / "Data"
-OUTPUT_DIR  = BASE_DIR / "XGBoost" / "cytokine-only"/"diagnostic"/ "Outputs" 
+OUTPUT_DIR  = BASE_DIR / "XGBoost-diagnostic"/ "Outputs" 
 FIGURES_DIR = OUTPUT_DIR / "figures"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 FIGURES_DIR.mkdir(parents=True, exist_ok=True)
-
 # ============================================================================
 # PART 1: DATA QUALITY ANALYSIS
 # ============================================================================
