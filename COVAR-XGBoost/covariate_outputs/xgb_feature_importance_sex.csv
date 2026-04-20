@@ -1,0 +1,13 @@
+Feature,Importance,Target
+CT_T_follicular_helper_type_1,0.13907546,Sex
+CT_Activated_Naive_Treg_cells,0.13416725,Sex
+IL-21,0.12906505,Sex
+CT_Myeloid_DC_Live_Scatter,0.08751848,Sex
+CT_Dendritic_cells_Live_Scatter,0.0868898,Sex
+CT_Treg_cells,0.07809358,Sex
+CT_HLAnegDRneg_Naive_Treg_cells,0.071809106,Sex
+CT_Plasmacytoid_DC_Live_Scatter,0.05879774,Sex
+CT_HLAnegDRneg_Memory_Treg_cells,0.057947695,Sex
+CT_Transitional_B_cells,0.05402992,Sex
+CT_Dendritic_cells_Linneg,0.052607547,Sex
+CT_IgDnegCD27neg_B_cells,0.049998347,Sex

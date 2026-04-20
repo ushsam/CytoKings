@@ -1,0 +1,13 @@
+Feature,Importance,Target
+CT_Central_Memory_CD8pos_T_cells,0.16177621,Age
+CT_Effector_Treg_cells,0.10178789,Age
+CT_IgDnegCD27neg_B_cells,0.09171536,Age
+CT_HLAnegDRneg_Naive_Treg_cells,0.0916739,Age
+CT_Plasma_cells,0.080164246,Age
+CT_Naive_CD8pos_T_cells,0.075798005,Age
+CT_Average_Lymphocytes,0.075247735,Age
+CT_Effector_CD8pos_T_cells,0.07388534,Age
+CT_Naive_CD4pos_T_cells,0.070420295,Age
+CT_Average_CD4pos_T_cells,0.07037573,Age
+CT_Central_Memory_CD4pos_T_cells,0.055946924,Age
+CT_Activated_Central_Memory_CD8pos_T_cells,0.05120837,Age
