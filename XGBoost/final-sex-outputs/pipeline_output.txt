@@ -1,0 +1,176 @@
+================================================================================
+LOADING DATA
+================================================================================
+✓ Data loaded: 125 samples × 24 columns
+  Source: /Users/emmafranken/Desktop/School/CMU/machine learning/CytoKings/Data/analysis_merged_subject_level.csv
+✓ Features: 18 columns
+✓ Target: SEXC  (positive class = 'Male')
+  - Negative (0): 62
+  - Positive (1): 63
+  - Balance: 62/63 ratio = 0.984
+
+================================================================================
+OUTLIER HANDLING (99th Percentile Clipping)
+================================================================================
+✓ Clipped all features to 99th percentile
+
+================================================================================
+ROBUST SCALING
+================================================================================
+✓ Applied RobustScaler (handles outliers better than Z-score)
+
+================================================================================
+FEATURE SELECTION (ANOVA)
+================================================================================
+✓ Selected top 12 features (ANOVA)
+  Feature/Sample ratio: 12/125 = 0.096 (good: <0.05)
+
+Top 5 selected features:
+Feature  ANOVA_F_Score  Selected
+  IL-21       6.217181      True
+   IL-9       5.419390      True
+  IL-23       5.309758      True
+  IL-22       4.742996      True
+  IL-27       4.326096      True
+
+✓ Saved: Outputs/sex_feature_selection_anova.csv
+
+================================================================================
+MODEL SETUP & CROSS-VALIDATION
+================================================================================
+✓ Using RepeatedStratifiedKFold (5 folds × 10 repeats = 50 total folds)
+
+================================================================================
+CROSS-VALIDATION RESULTS (10×5-fold)
+================================================================================
+
+Logistic Regression...
+  ✓ Accuracy: 0.5360 ± 0.0763
+  ✓ F1-Score: 0.5995 ± 0.0713
+  ✓ ROC-AUC:  0.5235 ± 0.1105
+
+Random Forest...
+  ✓ Accuracy: 0.5936 ± 0.0840
+  ✓ F1-Score: 0.6048 ± 0.0927
+  ✓ ROC-AUC:  0.6621 ± 0.0967
+
+Gradient Boosting...
+  ✓ Accuracy: 0.5832 ± 0.0943
+  ✓ F1-Score: 0.5869 ± 0.1025
+  ✓ ROC-AUC:  0.6110 ± 0.0962
+
+SVM (RBF)...
+  ✓ Accuracy: 0.5616 ± 0.0720
+  ✓ F1-Score: 0.6680 ± 0.0477
+  ✓ ROC-AUC:  0.6531 ± 0.1520
+
+XGBoost...
+  ✓ Accuracy: 0.5960 ± 0.0832
+  ✓ F1-Score: 0.6048 ± 0.0902
+  ✓ ROC-AUC:  0.6408 ± 0.0969
+
+================================================================================
+MODEL COMPARISON TABLE
+================================================================================
+
+                            Accuracy        Precision           Recall         F1-Score          ROC-AUC Accuracy_Mean
+Logistic Regression  0.5360 ± 0.0763  0.5320 ± 0.0628  0.6960 ± 0.1167  0.5995 ± 0.0713  0.5235 ± 0.1105         0.536
+Random Forest        0.5936 ± 0.0840  0.6011 ± 0.1061  0.6281 ± 0.1344  0.6048 ± 0.0927  0.6621 ± 0.0967        0.5936
+Gradient Boosting    0.5832 ± 0.0943  0.5891 ± 0.1009  0.5985 ± 0.1379  0.5869 ± 0.1025  0.6110 ± 0.0962        0.5832
+SVM (RBF)            0.5616 ± 0.0720  0.5443 ± 0.0561  0.8731 ± 0.0702  0.6680 ± 0.0477  0.6531 ± 0.1520        0.5616
+XGBoost              0.5960 ± 0.0832  0.5985 ± 0.0869  0.6226 ± 0.1246  0.6048 ± 0.0902  0.6408 ± 0.0969         0.596
+
+✓ Saved: Outputs/sex_model_comparison.csv
+
+================================================================================
+FINAL XGBOOST MODEL & FEATURE IMPORTANCE
+================================================================================
+
+Top 10 Most Important Features:
+ Feature  Importance
+   IL-21    0.116733
+  IL-17A    0.098441
+  GM-CSF    0.097577
+    IL-4    0.090386
+IL-12p70    0.082310
+   IL-23    0.078499
+   IL-27    0.078056
+    IL-9    0.077068
+   IL-13    0.074175
+   IL-22    0.072340
+
+✓ Saved: Outputs/sex_xgboost_feature_importance.csv
+
+================================================================================
+FINAL XGBOOST EVALUATION
+================================================================================
+Accuracy:  1.0000
+Precision: 1.0000
+Recall:    1.0000
+F1-Score:  1.0000
+ROC-AUC:   1.0000
+
+Confusion Matrix:
+  True Negatives  (Correctly classified not Male):  62
+  False Positives (not Male misclassified):         0
+  False Negatives (Male misclassified):    0
+  True Positives  (Correctly classified Male): 63
+
+Classification Report:
+              precision    recall  f1-score   support
+
+    not Male       1.00      1.00      1.00        62
+        Male       1.00      1.00      1.00        63
+
+    accuracy                           1.00       125
+   macro avg       1.00      1.00      1.00       125
+weighted avg       1.00      1.00      1.00       125
+
+
+================================================================================
+GENERATING VISUALIZATIONS
+================================================================================
+✓ Saved: Outputs/sex_classification_comprehensive_results.png
+
+Saving individual panels...
+✓ Saved: Outputs/panel_1_model_accuracy.png
+✓ Saved: Outputs/panel_2_feature_importance.png
+✓ Saved: Outputs/panel_3_confusion_matrix.png
+✓ Saved: Outputs/panel_4_roc_curve.png
+✓ Saved: Outputs/panel_5_class_distribution.png
+✓ Saved: Outputs/panel_6_top3_heatmap.png
+✓ Saved: Outputs/panel_7_feature_selection_pie.png
+✓ Saved: Outputs/panel_8_accuracy_by_model.png
+
+================================================================================
+SAVING RESULTS SUMMARY
+================================================================================
+✓ Saved: Outputs/sex_classification_results_summary.csv
+
+================================================================================
+SUMMARY — SEXC CLASSIFICATION RESULTS
+================================================================================
+
+📊 Dataset: 125 samples  |  Source: analysis_merged_subject_level.csv
+   - not Male: 62
+   - Male: 63
+
+🔧 Preprocessing:
+   - Outlier clipping : 99th percentile
+   - Scaling          : RobustScaler
+   - Feature selection: ANOVA (12 of 18 features)
+
+🤖 Model Performance (10×5-fold CV):
+   - Best Model : XGBoost (59.6% accuracy)
+   - XGBoost    : 59.6% accuracy
+
+⭐ Top 3 Important Features:
+   1. IL-21 (0.117)
+   2. IL-17A (0.098)
+   3. GM-CSF (0.098)
+
+📁 All outputs saved to: /Users/emmafranken/Desktop/School/CMU/machine learning/CytoKings/XGBoost/final-sex-outputs
+
+================================================================================
+✓ Pipeline completed successfully!
+================================================================================

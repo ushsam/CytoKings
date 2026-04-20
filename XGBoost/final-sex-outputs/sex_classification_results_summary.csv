@@ -1,0 +1,18 @@
+,Value
+Target,SEXC
+Positive_Class,Male
+Samples,125
+Features_Original,18
+Features_Selected,12
+Feature_Sample_Ratio,0.096
+Negative_Count,62
+Positive_Count,63
+Class_Balance_Ratio,0.9841269841269841
+XGBoost_CV_Accuracy,0.5960
+XGBoost_CV_F1,0.6048 ± 0.0902
+XGBoost_CV_ROC_AUC,0.6408 ± 0.0969
+XGBoost_Train_Accuracy,1.0000
+XGBoost_Train_F1,1.0000
+XGBoost_Train_ROC_AUC,1.0000
+Best_Model,XGBoost
+Best_Model_Accuracy,0.5960
