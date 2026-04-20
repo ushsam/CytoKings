@@ -4,10 +4,12 @@ Rows = clusters from FCM, Columns = top cytokines
 Values = mean cytokine MFI per cluster
 """
 
+import matplotlib
+matplotlib.use('Agg')
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 from pathlib import Path
 
 # ============================================================================
@@ -15,9 +17,9 @@ from pathlib import Path
 # ============================================================================
 BASE_DIR   = Path(__file__).resolve().parent.parent
 DATA_DIR   = BASE_DIR / "Data"
-PCA_DIR    = BASE_DIR / "PCA+KNN-Emma" / "Outputs" / "cytokines_only"
 OUTPUT_DIR = BASE_DIR / "bio-interpretation" / "outputs" / "figures"
 BIO_DIR    = BASE_DIR / "bio-interpretation" / "outputs"
+FEAT_DIR   = BASE_DIR / "feature_importance_summary" / "Output"
 BIO_DIR.mkdir(parents=True, exist_ok=True)
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -26,25 +28,33 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 # ============================================================================
 df = pd.read_csv(DATA_DIR / "analysis_merged_subject_level.csv")
 
-CYTO_COLS = [
-    "IFN-gamma", "IL-12p70", "IL-13", "IL-1beta", "IL-2", "IL-4", "IL-5",
-    "IL-6", "TNF-alpha", "GM-CSF", "IL-18", "IL-10", "IL-17A", "IL-21",
-    "IL-22", "IL-23", "IL-27", "IL-9"
-]
+# Extract cytokine columns dynamically
+DEMO_COLS = ['SUBJECT_ID', 'AGE', 'AGEGR1N', 'AGEGR1C', 'RACEGRP',
+             'SEXN', 'SEXC', 'FASFL', 'AGE_BINARY', 'Batch date']
+CYTO_COLS = [c for c in df.columns
+             if c not in DEMO_COLS and not c.startswith('CT_')]
+print(f"Cytokines detected: {CYTO_COLS}")
 
 X_raw = df[CYTO_COLS].values.astype(float)
 X_log = np.log1p(X_raw)
 y     = (df["SEXC"] == "Male").astype(int).values
 
-feat_imp = pd.read_csv(BASE_DIR / "XGBoost" / "cytokine-only" / 
-                        "feature_importance_summary" / 
-                        "feature_importance_comparison.csv")
+# Top 10 cytokines by combined sex + age importance
+feat_imp_path = FEAT_DIR / "feature_importance_comparison.csv"
+if feat_imp_path.exists():
+    feat_imp      = pd.read_csv(feat_imp_path)
+    TOP_CYTOKINES = feat_imp.nlargest(10, "Combined")["Feature"].tolist()
+    print(f"Top cytokines (combined): {TOP_CYTOKINES}")
+else:
+    print(f"  WARNING: feature_importance_comparison.csv not found, using defaults")
+    TOP_CYTOKINES = [
+        "IL-21", "IL-22", "IL-4", "IL-9", "GM-CSF",
+        "IL-18", "IL-6", "IL-10", "IL-1beta", "IL-13"
+    ]
 
-# Top 10 by combined sex + age importance
-TOP_CYTOKINES = feat_imp.nlargest(10, "Combined")["Feature"].tolist()
-print(f"Top cytokines (combined): {TOP_CYTOKINES}")
-
-# Immune pathway annotation per cytokine
+# ============================================================================
+# PATHWAY ANNOTATION
+# ============================================================================
 PATHWAY_ANNOTATION = {
     "IL-21":    "Tfh/Th17 → B cell differentiation, germinal center\n★ Top sex + age cytokine",
     "IL-22":    "Th17/NK → Mucosal barrier, tissue repair\n★ Top sex cytokine (LogReg)",
@@ -66,15 +76,14 @@ PATHWAY_ANNOTATION = {
     "IL-27":    "DCs/Macrophages → Th1 regulation, anti-inflammatory",
 }
 
-# Save pathway annotation to bio-interpretation folder
 pd.DataFrame([
-    {"Cytokine": cyto, "Pathway": pathway}
-    for cyto, pathway in PATHWAY_ANNOTATION.items()
+    {"Cytokine": cyto, "Pathway": PATHWAY_ANNOTATION.get(cyto, "Unknown")}
+    for cyto in CYTO_COLS
 ]).to_csv(BIO_DIR / "cytokine_pathway_annotation.csv", index=False)
 print(f"✓ Saved: cytokine_pathway_annotation.csv → {BIO_DIR}")
 
 # ============================================================================
-# SOFT CLUSTER ASSIGNMENTS
+# SOFT CLUSTER ASSIGNMENTS — FCM k=3 on global log1p PCA
 # ============================================================================
 try:
     import skfuzzy as fuzz
@@ -85,7 +94,8 @@ except ImportError:
     import skfuzzy as fuzz
 
 X_global_mean   = X_log.mean(axis=0)
-X_global_std    = X_log.std(axis=0);  X_global_std[X_global_std == 0] = 1
+X_global_std    = X_log.std(axis=0)
+X_global_std[X_global_std == 0] = 1
 X_global_scaled = (X_log - X_global_mean) / X_global_std
 X_centered      = X_global_scaled - X_global_scaled.mean(axis=0)
 X_centered      = np.nan_to_num(X_centered, nan=0.0, posinf=0.0, neginf=0.0)
@@ -107,8 +117,10 @@ for c in range(3):
 # ============================================================================
 # BUILD HEATMAP DATA
 # ============================================================================
-top_idx  = [CYTO_COLS.index(c) for c in TOP_CYTOKINES]
-X_top    = X_log[:, top_idx]
+# Filter TOP_CYTOKINES to only those present in CYTO_COLS
+TOP_CYTOKINES = [c for c in TOP_CYTOKINES if c in CYTO_COLS]
+top_idx       = [CYTO_COLS.index(c) for c in TOP_CYTOKINES]
+X_top         = X_log[:, top_idx]
 
 n_clusters     = 3
 heatmap_vals   = np.zeros((n_clusters, len(TOP_CYTOKINES)))
@@ -133,8 +145,8 @@ print(f"Z-score range: {heatmap_z.min():.2f} to {heatmap_z.max():.2f}")
 # ============================================================================
 # VISUALIZATION
 # ============================================================================
-fig = plt.figure(figsize=(12, 6))
-ax_main = fig.add_subplot(111)
+fig, ax_main = plt.subplots(figsize=(12, 6))
+
 im = ax_main.imshow(heatmap_z, cmap="RdBu_r", aspect="auto",
                     vmin=-z_max, vmax=z_max)
 
@@ -164,7 +176,8 @@ plt.suptitle(
     fontsize=13, fontweight="bold", y=1.02
 )
 
-plt.savefig(OUTPUT_DIR / "cluster_cytokine_heatmap.png",
+plt.tight_layout()
+plt.savefig(FEAT_DIR / "cluster_cytokine_heatmap.png",
             dpi=150, bbox_inches="tight", facecolor="white")
 plt.close()
 print("✓ Saved: cluster_cytokine_heatmap.png")
@@ -174,7 +187,10 @@ print("✓ Saved: cluster_cytokine_heatmap.png")
 # ============================================================================
 summary_rows = []
 for j, cyto in enumerate(TOP_CYTOKINES):
-    row = {"Cytokine": cyto, "Pathway": PATHWAY_ANNOTATION[cyto]}
+    row = {
+        "Cytokine": cyto,
+        "Pathway":  PATHWAY_ANNOTATION.get(cyto, "Unknown")
+    }
     for c in range(n_clusters):
         row[f"Cluster{c+1}_Mean_MFI"] = round(heatmap_vals[c, j], 4)
         row[f"Cluster{c+1}_Zscore"]   = round(heatmap_z[c, j], 4)

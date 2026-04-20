@@ -14,25 +14,26 @@ from pathlib import Path
 # ============================================================================
 BASE_DIR       = Path(__file__).resolve().parent.parent
 PCA_DIR        = BASE_DIR / "PCA+KNN-Emma" / "Outputs" / "cytokines_only"
-SEX_XGB_DIR    = BASE_DIR / "XGBoost" / "cytokine-only" / "sex" / "Outputs"
-SEX_LR_DIR     = BASE_DIR / "XGBoost" / "cytokine-only" / "sex" / "sex_enhanced" / "Outputs"
-AGE_DIR        = BASE_DIR / "XGBoost" / "cytokine-only" / "age" / "Outputs" / "binary_age"
+SEX_XGB_DIR    = BASE_DIR / "XGBoost-cytokine-sex" / "final-sex-outputs"
+SEX_LR_DIR     = BASE_DIR / "XGBoost-cytokine-sex" / "final-sex-outputs"
+AGE_DIR        = BASE_DIR / "XGBoost-cytokine-age" / "Outputs" / "binary_age"
 AGE_KNN_DIR    = BASE_DIR / "PCA+KNN-Emma" / "Outputs" / "age_binary"
-OUTPUT_DIR     = BASE_DIR / "XGBoost" / "cytokine-only" / "feature_importance_summary"
+OUTPUT_DIR     = BASE_DIR / "feature_importance_summary" / "Output"
+FIG_DIR = OUTPUT_DIR / "figures"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+FIG_DIR.mkdir(parents=True, exist_ok=True)
 
 # ============================================================================
 # LOAD
 # ============================================================================
-sex_xgb_imp = pd.read_csv(SEX_XGB_DIR / "feature_importance.csv")
-sex_lr_imp  = pd.read_csv(SEX_LR_DIR  / "feature_importance_enhanced.csv")
+sex_xgb_imp = pd.read_csv(SEX_XGB_DIR / "sex_xgboost_feature_importance.csv")
+sex_lr_imp  = pd.read_csv(SEX_LR_DIR  / "sex_xgboost_feature_importance.csv")
 age_xgb_imp = pd.read_csv(AGE_DIR     / "results_xgb_importance_age.csv")
 age_lr_imp  = pd.read_csv(AGE_DIR     / "results_lr_coefficients_age.csv")
 sex_ttest   = pd.read_csv(PCA_DIR     / "cytokine_sex_comparison.csv")
 age_anova   = pd.read_csv(AGE_DIR     / "results_anova_age.csv")
 knn_sex_imp = pd.read_csv(PCA_DIR     / "feature_importance.csv")
 knn_age_imp = pd.read_csv(AGE_KNN_DIR     / "age-feature_importance.csv")
-
 
 
 # ============================================================================
@@ -58,8 +59,8 @@ age_sig = dict(zip(age_anova["Cytokine"], age_anova["Significant"]))
 # ============================================================================
 
 # XGBoost merged
-merged = sex_xgb_imp[["Cytokine", "norm"]].rename(
-    columns={"Cytokine": "Feature", "norm": "Sex_norm"}
+merged = sex_xgb_imp[["Feature", "norm"]].rename(
+    columns={"norm": "Sex_norm"}
 ).merge(
     age_xgb_imp[["Feature", "norm"]].rename(columns={"norm": "Age_norm"}),
     on="Feature", how="outer"
@@ -72,8 +73,8 @@ merged = merged.sort_values("Combined", ascending=True)
 merged.to_csv(OUTPUT_DIR / "feature_importance_comparison.csv", index=False)
 
 # LR merged
-merged_lr = sex_lr_imp[["Cytokine", "norm"]].rename(
-    columns={"Cytokine": "Feature", "norm": "Sex_LR_norm"}
+merged_lr = sex_lr_imp[["Feature", "norm"]].rename(
+    columns={"norm": "Sex_LR_norm"}
 ).merge(
     age_lr_imp[["Feature", "norm"]].rename(columns={"norm": "Age_LR_norm"}),
     on="Feature", how="outer"
@@ -131,7 +132,7 @@ ax2.axvline(0, color="black", linewidth=0.5)
 ax2.grid(axis="x", alpha=0.3)
 
 plt.tight_layout()
-plt.savefig(OUTPUT_DIR / "feature_importance_sex_vs_age.png",
+plt.savefig(FIG_DIR / "feature_importance_sex_vs_age.png",
             dpi=150, bbox_inches="tight", facecolor="white")
 plt.close()
 print("✓ Saved: feature_importance_sex_vs_age.png")
@@ -232,7 +233,7 @@ make_scatter(
 )
 
 plt.tight_layout()
-plt.savefig(OUTPUT_DIR / "feature_importance_scatter.png",
+plt.savefig(FIG_DIR / "feature_importance_scatter.png",
             dpi=150, bbox_inches="tight", facecolor="white")
 plt.close()
 print("✓ Saved: feature_importance_scatter.png")
@@ -283,7 +284,7 @@ ax4b.set_xlim(0, 1.3)
 ax4b.grid(axis="x", alpha=0.3)
 
 plt.tight_layout()
-plt.savefig(OUTPUT_DIR / "feature_importance_lr_sex_vs_age.png",
+plt.savefig(FIG_DIR / "feature_importance_lr_sex_vs_age.png",
             dpi=150, bbox_inches="tight", facecolor="white")
 plt.close()
 print("✓ Saved: feature_importance_lr_sex_vs_age.png")
@@ -343,7 +344,7 @@ ax3.text(4.5, -0.8, "KNN", ha="center", fontsize=9,
          transform=ax3.get_xaxis_transform())
 
 plt.tight_layout()
-plt.savefig(OUTPUT_DIR / "feature_importance_heatmap_combined.png",
+plt.savefig(FIG_DIR / "feature_importance_heatmap_combined.png",
             dpi=150, bbox_inches="tight", facecolor="white")
 plt.close()
 print("✓ Saved: feature_importance_heatmap_combined.png")
@@ -391,7 +392,7 @@ ax_sex.axhline(0.5, color="white", linewidth=2)
 ax_sex.axhline(1.5, color="white", linewidth=2)
 
 plt.tight_layout()
-plt.savefig(OUTPUT_DIR / "feature_importance_heatmap_sex.png",
+plt.savefig(FIG_DIR / "feature_importance_heatmap_sex.png",
             dpi=150, bbox_inches="tight", facecolor="white")
 plt.close()
 print("✓ Saved: feature_importance_heatmap_sex.png")
