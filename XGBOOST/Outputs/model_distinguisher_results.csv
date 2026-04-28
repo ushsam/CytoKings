@@ -1,0 +1,11 @@
+Model_A,Model_B,"b (A wrong, B right)","c (A right, B wrong)",chi2,p_value,Significant
+Logistic Regression,Random Forest,20,11,2.065,0.1508,ns
+Logistic Regression,Gradient Boosting,23,18,0.39,0.5322,ns
+Logistic Regression,SVM (RBF),6,4,0.1,0.7518,ns
+Logistic Regression,XGBoost,27,15,2.881,0.0896,ns
+Random Forest,Gradient Boosting,8,12,0.45,0.5023,ns
+Random Forest,SVM (RBF),14,21,1.029,0.3105,ns
+Random Forest,XGBoost,10,7,0.235,0.6276,ns
+Gradient Boosting,SVM (RBF),21,24,0.089,0.7656,ns
+Gradient Boosting,XGBoost,14,7,1.714,0.1904,ns
+SVM (RBF),XGBoost,26,16,1.929,0.1649,ns

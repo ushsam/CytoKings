@@ -1,0 +1,13 @@
+Cytokine,Mean_Abs_SHAP,Mean_SHAP,Direction
+IL-21,0.7825,0.0801,Male_up
+IL-4,0.4508,0.0361,Male_up
+IL-10,0.2663,0.0315,Male_up
+IL-9,0.2603,-0.0294,Female_up
+GM-CSF,0.2504,-0.0205,Female_up
+IL-23,0.1807,-0.0292,Female_up
+IL-13,0.1392,-0.0387,Female_up
+IL-27,0.1265,-0.0137,Female_up
+IL-6,0.1039,-0.0132,Female_up
+IL-22,0.1012,-0.0031,Female_up
+IL-12p70,0.0636,-0.0005,Female_up
+IL-17A,0.0448,-0.005,Female_up
