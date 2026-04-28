@@ -1,0 +1,9 @@
+Metric,Value
+Real CV Accuracy,0.588
+Permuted Mean,0.4999
+Permuted Std,0.039
+Permuted 5th Percentile,0.44
+Permuted 95th Percentile,0.5672
+p-value,0.017
+N Permutations,1000
+Significant (p<0.05),True

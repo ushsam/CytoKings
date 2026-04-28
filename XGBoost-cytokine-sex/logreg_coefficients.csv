@@ -1,0 +1,13 @@
+Cytokine,Coefficient,Higher_In,Abs_Coef
+IL-21,-0.0631,Female,0.0631
+IL-9,-0.0477,Female,0.0477
+IL-13,-0.0446,Female,0.0446
+IL-22,-0.0394,Female,0.0394
+IL-23,-0.0306,Female,0.0306
+IL-27,-0.0284,Female,0.0284
+IL-6,-0.0067,Female,0.0067
+IL-12p70,-0.0052,Female,0.0052
+IL-4,-0.0025,Female,0.0025
+IL-17A,0.0061,Male,0.0061
+GM-CSF,0.0144,Male,0.0144
+IL-10,0.0182,Male,0.0182
