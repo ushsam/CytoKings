@@ -1,9 +1,29 @@
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
+from pathlib import Path
+
+# ---- PATHS ----
+try:
+    BASE_PATH = Path(__file__).resolve().parent
+except NameError:
+    BASE_PATH = Path.cwd()
+
+REPO_PATH  = BASE_PATH.parent if BASE_PATH.name != "CytoKings" else BASE_PATH
+DATA_PATH  = REPO_PATH / "Data"
+
+INPUT_META  = DATA_PATH / "grifols_data_final.csv"
+INPUT_CYTO  = DATA_PATH / "grifols_cytokine_data.csv"
+OUTPUT_FILE = DATA_PATH / "analysis_merged_subject_level.csv"
+
+print("Repo root  :", REPO_PATH)
+print("Meta file  :", INPUT_META)
+print("Cyto file  :", INPUT_CYTO)
+print("Meta exists:", INPUT_META.exists())
+print("Cyto exists:", INPUT_CYTO.exists())
 
 # ---- 0) Read original files ----
-meta_long = pd.read_csv("/Users/vineetpaliwal/CytoKings/CytoKings/Data/grifols_data_final.csv")
-cyto_raw  = pd.read_csv("/Users/vineetpaliwal/CytoKings/CytoKings/Data/grifols_cytokine_data.csv")
+meta_long = pd.read_csv(INPUT_META)
+cyto_raw  = pd.read_csv(INPUT_CYTO)
 
 # ---- 1) Subject-level metadata (one row per SUBJECT ID) ----
 meta_long = meta_long.rename(columns={"SUBJECT ID": "SUBJECT_ID"})
@@ -62,4 +82,5 @@ y_age  = df["AGE"].values
 y_sex  = (df["SEXC"] == "Male").astype(int).values
 y_race = df["RACEGRP"].values
 
-df.to_csv("/Users/vineetpaliwal/CytoKings/CytoKings/Data/analysis_merged_subject_level.csv", index=False)
+df.to_csv(OUTPUT_FILE, index=False)
+print("Saved to:", OUTPUT_FILE)

@@ -7,14 +7,24 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
+from pathlib import Path
 
 # ------------------ CONFIG ------------------
 
-# Path to merged subject-level file
-DATA_PATH = "/Users/vineetpaliwal/CytoKings/CytoKings/Data/analysis_merged_subject_level.csv"
+try:
+    BASE_PATH = Path(__file__).resolve().parent
+except NameError:
+    BASE_PATH = Path.cwd()
 
-# Output folder for plots
-OUT_DIR = "/Users/vineetpaliwal/CytoKings/CytoKings/Data/eda_subject_level"
+REPO_PATH  = BASE_PATH.parent if BASE_PATH.name != "CytoKings" else BASE_PATH
+DATA_PATH  = REPO_PATH / "Data" / "analysis_merged_subject_level.csv"
+OUT_DIR    = REPO_PATH / "Data" / "eda_subject_level"
+OUT_DIR.mkdir(parents=True, exist_ok=True)
+
+print("Repo root  :", REPO_PATH)
+print("Data file  :", DATA_PATH)
+print("Data exists:", DATA_PATH.exists())
+print("Output dir :", OUT_DIR)
 
 # Cytokine columns
 CYTO_COLS = [
