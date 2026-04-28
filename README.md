@@ -8,6 +8,7 @@ expression profiles in 125 healthy adult donors (63M/62F).
 
 ## Repository Structure
 
+```
 CytoKings/
 ├── Data/
 │   ├── dataprep.py                          ← data merging + preprocessing
@@ -29,9 +30,7 @@ CytoKings/
 ├── .gitignore
 ├── requirements.txt
 └── README.md
----
-
-## Recommended Run Order
+```
 
 ## Recommended Run Order
 
