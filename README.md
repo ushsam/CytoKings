@@ -2,10 +2,7 @@
 
 ### Project Overview
 
-Machine learning pipeline to predict biological sex from resting cytokine 
-expression profiles in 125 healthy adult donors (63M/62F). 
-18 cytokine features measured via Luminex multiplex bead assay (MFI values).
----
+Machine learning pipeline to predict biological sex from resting cytokine expression profiles in 125 healthy adult donors (63M/62F). 18 cytokine features measured via Luminex multiplex bead assay (MFI values).
 
 ## Repository Structure
 
