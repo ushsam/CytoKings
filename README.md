@@ -86,13 +86,5 @@ Output folder: `Data/eda_subject_analysis/`
 
 ### Install all with:
 
-```bash
-pip install \
-  numpy==1.26.4 \
-  pandas==2.2.1 \
-  matplotlib==3.8.3 \
-  seaborn==0.13.2 \
-  scikit-learn==1.4.1 \
-  xgboost==2.0.3 \
-  shap==0.44.1 \
-  scipy==1.12.0
+'''bash
+pip install -r requirements.txt
