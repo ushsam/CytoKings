@@ -22,7 +22,7 @@ from sklearn.metrics import (accuracy_score, precision_score, recall_score,
                               f1_score, roc_auc_score, confusion_matrix,
                               classification_report, roc_curve)
 from sklearn.feature_selection import f_classif, SelectKBest
-from xgboost import XGBClassifier
+from XGBOOST.xgboost import XGBClassifier
 from scipy import stats
 import joblib
 import warnings

@@ -28,7 +28,7 @@ from sklearn.metrics import (accuracy_score, precision_score, recall_score,
                              classification_report, roc_curve)
 
 # Models
-from xgboost import XGBClassifier
+from XGBOOST.xgboost import XGBClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.svm import SVC

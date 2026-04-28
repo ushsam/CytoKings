@@ -12,7 +12,7 @@ from sklearn.model_selection import cross_val_score, StratifiedKFold, GridSearch
 from sklearn.metrics import (accuracy_score, precision_score, recall_score,
                              f1_score, roc_auc_score, confusion_matrix,
                              classification_report, roc_curve, auc)
-from xgboost import XGBClassifier
+from XGBOOST.xgboost import XGBClassifier
 import warnings
 import joblib
 warnings.filterwarnings('ignore')

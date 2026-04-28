@@ -17,7 +17,7 @@ from sklearn.metrics import (accuracy_score, precision_score, recall_score,
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, VotingClassifier
 from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
-from xgboost import XGBClassifier
+from XGBOOST.xgboost import XGBClassifier
 from imblearn.over_sampling import SMOTE
 import warnings
 import joblib

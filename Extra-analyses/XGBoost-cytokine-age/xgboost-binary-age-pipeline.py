@@ -16,7 +16,7 @@ from sklearn.model_selection import (StratifiedKFold, cross_val_score,
 from sklearn.preprocessing import RobustScaler
 from sklearn.decomposition import PCA
 from sklearn.neighbors import KNeighborsClassifier
-from xgboost import XGBClassifier
+from XGBOOST.xgboost import XGBClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import cross_val_predict
 from sklearn.metrics import (accuracy_score, precision_score, recall_score,

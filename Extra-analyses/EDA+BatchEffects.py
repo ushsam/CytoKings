@@ -273,7 +273,7 @@ print("=" * 65)
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import roc_auc_score
-from xgboost import XGBClassifier
+from XGBOOST.xgboost import XGBClassifier
 from scipy.stats import chi2_contingency
  
 BATCH_COL = "Batch date"

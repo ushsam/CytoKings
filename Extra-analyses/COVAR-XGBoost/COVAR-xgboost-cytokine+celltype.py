@@ -31,7 +31,7 @@ from sklearn.metrics import (accuracy_score, f1_score, roc_auc_score,
                              confusion_matrix, roc_curve)
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
-from xgboost import XGBClassifier
+from XGBOOST.xgboost import XGBClassifier
 from pathlib import Path
 
 import statsmodels.formula.api as smf

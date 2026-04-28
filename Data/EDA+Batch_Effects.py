@@ -290,7 +290,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import roc_auc_score
 from sklearn.utils import resample
-from xgboost import XGBClassifier
+from XGBOOST.xgboost import XGBClassifier
 from scipy.stats import chi2_contingency, zscore
 import shap
 
