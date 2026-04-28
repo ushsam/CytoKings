@@ -1,7 +1,8 @@
 ## CytoKings: Predicting Biological Sex from Cytokine Expression Profiles
 
 ### Project Overview
--Machine learning pipeline to predict biological sex from resting cytokine 
+
+Machine learning pipeline to predict biological sex from resting cytokine 
 expression profiles in 125 healthy adult donors (63M/62F). 
 18 cytokine features measured via Luminex multiplex bead assay (MFI values).
 ---
@@ -42,8 +43,6 @@ CytoKings/
 5. XGBOOST/permutation_test.py
 6. XGBOOST/model_distinguisher.py
 ```
-
-## Step-by-Step Instructions
 
 ## Step-by-Step Instructions
 
