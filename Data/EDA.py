@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from pathlib import Path
+import matplotlib.gridspec as gridspec
 
 # ------------------ CONFIG ------------------
 
@@ -61,7 +62,7 @@ cyto_desc.to_csv(os.path.join(OUT_DIR, "cytokine_summary_stats.csv"))
 print("\nCytokine summary stats:\n", cyto_desc)
 
 # ------------------ DISTRIBUTIONS ------------------
-
+'''
 for col in CYTO_COLS:
     plt.figure(figsize=(6,4))
     sns.histplot(df[col], kde=True)
@@ -77,7 +78,40 @@ for col in CYTO_COLS:
     plt.tight_layout()
     plt.savefig(os.path.join(OUT_DIR, f"{col}_hist_log1p.png"))
     plt.close()
+'''
 
+for col in CYTO_COLS:
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+    fig.suptitle(f"{col} Distribution", fontsize=13, fontweight="bold")
+
+    # Raw — clipped at 99th percentile
+    p99 = df[col].quantile(0.99)
+    data_clipped = df[col].clip(upper=p99)
+    axes[0].hist(data_clipped, bins=30, edgecolor="white",
+                 color="#6BAED6", alpha=0.85, density=True)
+    data_clipped.plot.kde(ax=axes[0], color="#1A4F72",
+                          linewidth=2, label="KDE")
+    axes[0].set_title(f"{col} (raw, clipped at 99th pct)")
+    axes[0].set_xlabel("MFI")
+    axes[0].set_ylabel("Density")
+    axes[0].legend(fontsize=9)
+    axes[0].set_xlim(left=0)
+
+    # log1p
+    log_data = np.log1p(df[col])
+    axes[1].hist(log_data, bins=30, edgecolor="white",
+                 color="#5BAD72", alpha=0.85, density=True)
+    log_data.plot.kde(ax=axes[1], color="#1A4F72",
+                      linewidth=2, label="KDE")
+    axes[1].set_title(f"{col} (log1p transformed)")
+    axes[1].set_xlabel("log1p(MFI)")
+    axes[1].set_ylabel("Density")
+    axes[1].legend(fontsize=9)
+
+    plt.tight_layout()
+    plt.savefig(OUT_DIR / f"{col}_distribution.png",
+                dpi=150, bbox_inches="tight")
+    plt.close()
 # ------------------ CORRELATION HEATMAP ------------------
 
 corr = df[CYTO_COLS].corr(method="spearman")
@@ -185,3 +219,66 @@ loadings = pd.DataFrame(
 loadings.to_csv(os.path.join(OUT_DIR, "PCA_loadings.csv"))
 
 print("EDA complete. Plots written to:", OUT_DIR)
+
+# ------------------ COMBINED FIGURE 1 PANEL (FOR PAPER) ------------------
+
+sns.set(style="whitegrid", context="talk")
+
+fig = plt.figure(figsize=(24, 8), facecolor="white")
+#fig.suptitle("Figure 1: Dataset Overview\nCytokine Expression Profiles in 125 Healthy Donors",
+#             fontsize=16, fontweight="bold", y=1.02)
+gs = gridspec.GridSpec(1, 3, figure=fig, wspace=0.4)
+
+# ---- Panel A: Correlation heatmap ----
+ax_a = fig.add_subplot(gs[0, 0])
+corr = df[CYTO_COLS].corr(method="spearman")
+sns.heatmap(corr, cmap="YlOrRd", center=None,
+            vmin=0, vmax=1.0,
+            square=True, annot=False,
+            linewidths=0.5, ax=ax_a,
+            cbar_kws={"shrink": 0.8, "label": "Spearman r"})
+ax_a.set_title("A: Cytokine Spearman\nCorrelation Heatmap",
+               fontsize=13, fontweight="bold", pad=12)
+ax_a.tick_params(labelsize=9)
+ax_a.set_xticklabels(ax_a.get_xticklabels(), rotation=45, ha="right")
+ax_a.set_yticklabels(ax_a.get_yticklabels(), rotation=0)
+
+# ---- Panel B: IFN-gamma raw distribution ----
+ax_b = fig.add_subplot(gs[0, 1])
+p99 = df["IFN-gamma"].quantile(0.99)
+data_clipped = df["IFN-gamma"].clip(upper=p99)
+ax_b.hist(data_clipped, bins=30, edgecolor="white",
+          color="#6BAED6", alpha=0.85, density=True)
+data_clipped.plot.kde(ax=ax_b, color="#08306B",
+                      linewidth=2.5, label="KDE")
+ax_b.set_xlim(left=0)
+ax_b.set_title("B: IFN-\u03b3 Raw Distribution\n(clipped at 99th percentile)",
+               fontsize=13, fontweight="bold", pad=12)
+ax_b.set_xlabel("MFI", fontsize=11)
+ax_b.set_ylabel("Density", fontsize=11)
+ax_b.legend(fontsize=10)
+ax_b.tick_params(labelsize=10)
+ax_b.yaxis.grid(True, alpha=0.4)
+
+# ---- Panel C: IFN-gamma log1p distribution ----
+ax_c = fig.add_subplot(gs[0, 2])
+log_data = np.log1p(df["IFN-gamma"])
+ax_c.hist(log_data, bins=30, edgecolor="white",
+          color="#5BAD72", alpha=0.85, density=True)
+log_data.plot.kde(ax=ax_c, color="#08306B",
+                  linewidth=2.5, label="KDE")
+ax_c.set_title("C: IFN-\u03b3 log1p Transformed\nDistribution",
+               fontsize=13, fontweight="bold", pad=12)
+ax_c.set_xlabel("log1p(MFI)", fontsize=11)
+ax_c.set_ylabel("Density", fontsize=11)
+ax_c.legend(fontsize=10)
+ax_c.tick_params(labelsize=10)
+ax_c.yaxis.grid(True, alpha=0.4)
+
+plt.savefig(OUT_DIR / "figure1_data_overview_panel.png",
+            dpi=150, bbox_inches="tight", facecolor="white")
+plt.close()
+
+# reset seaborn style back to default for rest of script
+sns.set(style="whitegrid", context="notebook")
+print("  Saved: figure1_data_overview_panel.png")
