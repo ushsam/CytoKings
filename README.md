@@ -86,5 +86,6 @@ Output folder: `Data/eda_subject_analysis/`
 
 ### Install all with:
 
-'''bash
+```bash
 pip install -r requirements.txt
+```
