@@ -20,6 +20,10 @@ Outputs:
   plot_logreg_coefficients.png      — coefficient bar chart with sex direction
   plot_permutation_importance.png   — permutation importance bar chart
 """
+
+import time
+pipeline_start = time.time()
+
 import matplotlib
 matplotlib.use('Agg')
 
@@ -368,3 +372,9 @@ print("  the Discussion section for biological interpretation.")
 print("\nPermutation importance: compare top features vs ANOVA and SHAP.")
 print("  Overlap across 3 methods = more trustworthy biological conclusion.")
 print("=" * 70)
+
+
+pipeline_end     = time.time()
+elapsed          = pipeline_end - pipeline_start
+mins, secs       = divmod(int(elapsed), 60)
+print(f"\nTotal runtime: {mins}m {secs}s")

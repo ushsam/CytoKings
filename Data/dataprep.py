@@ -1,3 +1,6 @@
+import time
+pipeline_start = time.time()
+
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from pathlib import Path
@@ -84,3 +87,8 @@ y_race = df["RACEGRP"].values
 
 df.to_csv(OUTPUT_FILE, index=False)
 print("Saved to:", OUTPUT_FILE)
+
+pipeline_end     = time.time()
+elapsed          = pipeline_end - pipeline_start
+mins, secs       = divmod(int(elapsed), 60)
+print(f"\nTotal runtime: {mins}m {secs}s")

@@ -8,6 +8,8 @@ Cross-validation: 10×5-fold Repeated Stratified K-Fold
 Preprocessing: Outlier clipping (99th percentile) + Robust Scaling + ANOVA Feature Selection
 Additions: Grid search for XGBoost + LogReg C tuning + SHAP + CV-based ROC
 """
+import time
+pipeline_start = time.time()
 
 import os
 os.environ['OMP_NUM_THREADS'] = '1'
@@ -801,3 +803,8 @@ print(f"All outputs saved to: {OUTPUT_DIR}")
 print(f"All figures saved to: {FIGURES_DIR}")
 print("=" * 80)
  
+
+pipeline_end     = time.time()
+elapsed          = pipeline_end - pipeline_start
+mins, secs       = divmod(int(elapsed), 60)
+print(f"\nTotal runtime: {mins}m {secs}s")

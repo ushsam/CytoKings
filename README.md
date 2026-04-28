@@ -1,7 +1,7 @@
-# CytoKings: Predicting Biological Sex from Cytokine Expression Profiles
+## CytoKings: Predicting Biological Sex from Cytokine Expression Profiles
 
 ### Project Overview
-Machine learning pipeline to predict biological sex from resting cytokine 
+-Machine learning pipeline to predict biological sex from resting cytokine 
 expression profiles in 125 healthy adult donors (63M/62F). 
 18 cytokine features measured via Luminex multiplex bead assay (MFI values).
 ---
@@ -154,15 +154,12 @@ pip install -r requirements.txt
 | Script | Runtime |
 |---|---|
 | `dataprep.py` | < 1 min |
-| `EDA.py` | 3–5 min (SHAP bootstrap in batch analysis) |
-| `PCA_KNN.ipynb` | 2–3 min |
-| `Xgboost.py` | 15–30 min (grid search + 10×5-fold CV) |
-| `permutation_test.py` | 10–20 min (1000 permutations) |
-| `model_distinguisher.py` | 5–10 min |
+| `EDA+Batch_Effects.py` | < 1 min (SHAP bootstrap in batch analysis) |
+| `PCA_KNN.ipynb` | < 1 min |
+| `Xgboost.py` | < 1 min (grid search + 10×5-fold CV) |
+| `permutation_test.py` | < 2 min (1000 permutations) |
+| `model_distinguisher.py` | <1 min |
 
 ## Notes
 - All scripts use relative paths — no hardcoded directories
 - Random seed fixed at 42 throughout for reproducibility
-- Run `dataprep.py` and `EDA.py` before any model scripts
-- Run `Xgboost.py` before `model_distinguisher.py`
-- `PCA_KNN.ipynb` and `Xgboost.py` can be run in parallel

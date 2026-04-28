@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+import time
+pipeline_start = time.time()
+
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -290,7 +293,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import roc_auc_score
 from sklearn.utils import resample
-from XGBOOST.xgboost import XGBClassifier
+from xgboost import XGBClassifier
 from scipy.stats import chi2_contingency, zscore
 import shap
 
@@ -531,3 +534,8 @@ else:
 print("\n" + "=" * 65)
 print("Bath effects complete. All outputs saved to:", OUT_DIR_BATCH)
 print("=" * 65)
+
+pipeline_end     = time.time()
+elapsed          = pipeline_end - pipeline_start
+mins, secs       = divmod(int(elapsed), 60)
+print(f"\nTotal runtime: {mins}m {secs}s")

@@ -16,6 +16,8 @@ Output:
   - permutation_test_results.csv  : score, p-value, permuted distribution stats
   - permutation_test_plot.png     : histogram of permuted accuracies vs real score
 """
+import time
+pipeline_start = time.time()
 
 import os
 os.environ['OMP_NUM_THREADS'] = '1'
@@ -224,3 +226,8 @@ plt.close()
 print("\n" + "=" * 70)
 print("DONE")
 print("=" * 70)
+
+pipeline_end     = time.time()
+elapsed          = pipeline_end - pipeline_start
+mins, secs       = divmod(int(elapsed), 60)
+print(f"\nTotal runtime: {mins}m {secs}s")
