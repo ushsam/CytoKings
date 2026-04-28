@@ -1,4 +1,3 @@
-
 ## Pipeline
 
 ### 1. Data Preparation
@@ -12,34 +11,18 @@ Input files (place in `Data/`):
 Output:
 - `Data/analysis_merged_subject_level.csv`
 
-### 2. Batch Effect Analysis
-Run `batch_test.ipynb` to verify that collection date (batch) does not
-confound sex classification before any modeling is performed.
+---
+
+### 2. Exploratory Data Analysis + Batch Effect Analysis
+Run `EDA.py` to generate all EDA figures, summary statistics, and
+batch effect validation. Note: EDA explores all demographic variables
+for completeness. Downstream modeling and the paper focus exclusively
+on sex prediction.
 
 Input:
 - `Data/analysis_merged_subject_level.csv`
 
-Tests performed:
-- Chi-square test of independence between batch and sex
-- Cross-validated ROC-AUC comparison with and without batch as a feature
-- SHAP feature stability analysis across bootstrap resamples
-
-Result: chi-square p=0.165 — no significant batch-sex association detected.
-Batch is excluded from all downstream modeling.
-
-Output:
-- `Data/eda_subject_analysis/batch_sex_chisquare.csv`
-- `Data/eda_subject_analysis/batch_auc_comparison.csv`
-
-### 3. Exploratory Data Analysis
-Run `EDA.py` to generate all EDA figures and summary statistics.
-Note: EDA explores all demographic variables for completeness.
-The downstream modeling and paper focus exclusively on sex prediction.
-
-Input:
-- `Data/analysis_merged_subject_level.csv`
-
-Output folder: `Data/eda_subject_analysis/`
+#### EDA Outputs → `Data/eda_subject_analysis/`
 - `cytokine_summary_stats.csv`
 - `cytokine_corr_matrix.csv`
 - `missingness_summary.csv`
@@ -51,40 +34,58 @@ Output folder: `Data/eda_subject_analysis/`
 - `PCA_scree.png`
 - `PCA_PC1_PC2_by_SEXC.png`
 - `PCA_loadings.csv`
-- `figure1_data_overview_panel.png`
+- `figure1_data_overview_panel.png` ← paper Figure 1
 
-### 4. Models
+#### Batch Effect Outputs → `Data/batch_effect_analysis/`
+Tests performed:
+- Chi-square test of independence between batch and sex
+- Cross-validated ROC-AUC comparison with and without batch feature
+- SHAP feature stability analysis across 10 bootstrap resamples
+- IQR and z-score outlier detection per cytokine
+- Cytokine correlation heatmap and clustermap
+
+Result: chi-square p=0.165 — no significant batch-sex association.
+Batch excluded from all downstream modeling.
+
+- `batch_sex_chisquare.csv`
+- `batch_mixing_table.csv`
+- `batch_auc_comparison.csv`
+- `shap_stability_no_batch.csv`
+- `shap_stability_with_batch.csv`
+- `outlier_iqr_summary.csv`
+- `outlier_zscore_summary.csv`
+- `top_outlier_samples.csv`
+- `batch_corr_heatmap.png`
+- `batch_clustermap.png`
+- `IL21_vs_IL17A_scatter.png`
+
+---
+
+### 3. Models
 [Add model scripts here as completed]
 
-### Step 4: PCA + KNN Classification
+#### Step 3: PCA + KNN Classification
 - SVD-based PCA implemented from scratch
-- Grid search over PCA components (2-10) and K (3-7)
+- Grid search over PCA components (2–10) and K (3–7)
 - Stratified 5-fold cross-validation
 - Fuzzy C-Means soft clustering comparison
 
-### Steps 5-7: XGBoost + Multiple Models (In Progress)
-- XGBoost, Logistic Regression
-- ANOVA-based feature selection
+#### Steps 4–5: Supervised Classification (In Progress)
+- XGBoost with ANOVA-based feature selection (from scratch CV loop)
+- Logistic Regression L2 (sklearn)
 - SHAP feature importance analysis
 
+---
+
 ## Recommended Run Order
-1. `dataprep.py`
-2. `batch_test.ipynb`
-3. `EDA.py`
-4. Model scripts (in progress)
+
+1. dataprep.py
+2. EDA+Bath_Effects.py
+3. Model scripts
 
 ## Requirements
 
-- numpy (1.26.4)  
-- pandas (2.2.1)  
-- matplotlib (3.8.3)  
-- seaborn (0.13.2)  
-- scikit-learn (1.4.1)  
-- xgboost (2.0.3)  
-- shap (0.44.1)  
-- scipy (1.12.0)  
-
-### Install all with:
+Install all dependencies with:
 
 ```bash
 pip install -r requirements.txt
