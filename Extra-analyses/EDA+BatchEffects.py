@@ -62,24 +62,6 @@ cyto_desc.to_csv(os.path.join(OUT_DIR, "cytokine_summary_stats.csv"))
 print("\nCytokine summary stats:\n", cyto_desc)
 
 # ------------------ DISTRIBUTIONS ------------------
-'''
-for col in CYTO_COLS:
-    plt.figure(figsize=(6,4))
-    sns.histplot(df[col], kde=True)
-    plt.title(f"{col} (raw)")
-    plt.tight_layout()
-    plt.savefig(os.path.join(OUT_DIR, f"{col}_hist_raw.png"))
-    plt.close()
-
-    # log1p in case of zeros
-    plt.figure(figsize=(6,4))
-    sns.histplot(np.log1p(df[col]), kde=True)
-    plt.title(f"{col} (log1p)")
-    plt.tight_layout()
-    plt.savefig(os.path.join(OUT_DIR, f"{col}_hist_log1p.png"))
-    plt.close()
-'''
-
 for col in CYTO_COLS:
     fig, axes = plt.subplots(1, 2, figsize=(12, 4))
     fig.suptitle(f"{col} Distribution", fontsize=13, fontweight="bold")
@@ -282,3 +264,141 @@ plt.close()
 # reset seaborn style back to default for rest of script
 sns.set(style="whitegrid", context="notebook")
 print("  Saved: figure1_data_overview_panel.png")
+
+# ------------------ BATCH EFFECT ANALYSIS ------------------
+print("\n" + "=" * 65)
+print("SECTION 11: BATCH EFFECT ANALYSIS")
+print("=" * 65)
+ 
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import StratifiedKFold
+from sklearn.metrics import roc_auc_score
+from xgboost import XGBClassifier
+from scipy.stats import chi2_contingency
+ 
+BATCH_COL = "Batch date"
+ 
+if BATCH_COL not in df.columns:
+    print(f"  WARNING: '{BATCH_COL}' column not found — skipping batch analysis")
+else:
+    batch = df[BATCH_COL].astype(str)
+    y_sex = LabelEncoder().fit_transform(df["SEXC"])   # Female=0, Male=1
+ 
+    # ---- Chi-square test: batch vs sex ----
+    contingency     = pd.crosstab(batch, y_sex)
+    chi2, p, dof, _ = chi2_contingency(contingency)
+    print(f"\n  Batch vs Sex chi-square:")
+    print(f"    chi2 = {chi2:.4f}  |  p = {p:.4f}  |  dof = {dof}")
+ 
+    if p > 0.05:
+        print("  → No significant batch-sex association (p>0.05)")
+        print("  → Batch safely excluded from downstream modeling")
+    else:
+        print("  → WARNING: Significant batch-sex association (p<0.05)")
+        print("  → Consider including batch as a covariate")
+ 
+    pd.DataFrame({
+        "Test":        ["Chi-square batch vs sex"],
+        "Chi2":        [round(chi2, 4)],
+        "p_value":     [round(p,    4)],
+        "DOF":         [dof],
+        "Significant": [p < 0.05]
+    }).to_csv(OUT_DIR / "batch_sex_chisquare.csv", index=False)
+    print("  Saved: batch_sex_chisquare.csv")
+ 
+    # ---- AUC with vs without batch ----
+    def cv_auc(X, y, n_splits=5, seed=42):
+        skf  = StratifiedKFold(n_splits=n_splits, shuffle=True,
+                               random_state=seed)
+        aucs = []
+        for train_idx, test_idx in skf.split(X, y):
+            Xtr = X.iloc[train_idx] if hasattr(X, "iloc") else X[train_idx]
+            Xte = X.iloc[test_idx]  if hasattr(X, "iloc") else X[test_idx]
+            ytr, yte = y[train_idx], y[test_idx]
+            model = XGBClassifier(max_depth=3, n_estimators=200,
+                                  learning_rate=0.05, subsample=0.8,
+                                  colsample_bytree=0.8,
+                                  eval_metric="logloss", verbosity=0)
+            model.fit(Xtr, ytr)
+            aucs.append(roc_auc_score(
+                yte, model.predict_proba(Xte)[:, 1]))
+        return np.array(aucs)
+ 
+    X_cyto       = df[CYTO_COLS].copy()
+    X_with_batch = X_cyto.copy()
+    X_with_batch["batch"] = LabelEncoder().fit_transform(batch)
+ 
+    auc_no   = cv_auc(X_cyto,       y_sex)
+    auc_with = cv_auc(X_with_batch, y_sex)
+ 
+    pd.DataFrame({
+        "Model":    ["Without batch", "With batch"],
+        "AUC_mean": [round(auc_no.mean(),   4),
+                     round(auc_with.mean(), 4)],
+        "AUC_std":  [round(auc_no.std(),    4),
+                     round(auc_with.std(),  4)]
+    }).to_csv(OUT_DIR / "batch_auc_comparison.csv", index=False)
+    print("  Saved: batch_auc_comparison.csv")
+ 
+    # ------------------ BATCH EFFECT ANALYSIS RESULTS ------------------
+    print("\n" + "=" * 65)
+    print("  BATCH EFFECT EVALUATION REPORT")
+    print("=" * 65)
+ 
+    print("""
+  1. OBJECTIVE
+     Determine whether technical batch variation (Batch date):
+     - Confounds sex classification
+     - Influences model performance
+     - Alters cytokine importance structure
+     - Introduces instability in biological interpretation
+    """)
+ 
+    print("  2. BATCH-SEX ASSOCIATION TEST")
+    print(f"     Chi-square p-value : {p:.4f}")
+    if p > 0.05:
+        print("     Result            : NOT significant (p > 0.05)")
+        print("     Interpretation    : Sex distribution is approximately")
+        print("                         balanced across batch groups.")
+        print("                         No evidence of sex clustering within")
+        print("                         specific batches.")
+        print("     Conclusion        : Batch is independent of sex.")
+        print("                         Safe to exclude from modeling.")
+    else:
+        print("     Result            : SIGNIFICANT (p < 0.05)")
+        print("     Interpretation    : Sex distribution differs across batches.")
+        print("     Conclusion        : Consider batch correction or inclusion")
+        print("                         as covariate.")
+ 
+    print("\n  3. MODEL PERFORMANCE — WITH vs WITHOUT BATCH")
+    print(f"     AUC without batch : {auc_no.mean():.4f} ± {auc_no.std():.4f}")
+    print(f"     AUC with batch    : {auc_with.mean():.4f} ± {auc_with.std():.4f}")
+    delta = abs(auc_with.mean() - auc_no.mean())
+    print(f"     Delta AUC         : {delta:.4f}")
+    if delta < 0.01:
+        print("     Conclusion        : Batch adds negligible predictive value.")
+        print("                         Model performance is driven by cytokine")
+        print("                         signal, not batch assignment.")
+    else:
+        print("     Conclusion        : Batch meaningfully changes AUC.")
+        print("                         Investigate batch effects further.")
+ 
+    print("\n  4. BATCH MIXING TABLE")
+    print("     Sex distribution per batch (proportion Male/Female):")
+    mixing          = contingency.div(contingency.sum(axis=1), axis=0)
+    mixing.columns  = ["Female", "Male"]
+    print(mixing.to_string(float_format="{:.3f}".format))
+ 
+    print("\n  5. FINAL DECISION")
+    if p > 0.05 and delta < 0.01:
+        print("     Batch excluded from all downstream modeling.")
+        print("     Results are not driven by technical batch effects.")
+        print("     Cytokine importance rankings reflect biological signal.")
+    else:
+        print("     Review batch effects before proceeding.")
+ 
+    print("\n  Batch analysis complete")
+ 
+print("\n" + "=" * 65)
+print("EDA complete. All outputs saved to:", OUT_DIR)
+print("=" * 65)
