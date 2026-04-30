@@ -25,12 +25,29 @@ CytoKings/
 │   ├── model_distinguisher.py               ← McNemar, calibration, LR coefficients
 │   └── Outputs/
 ├── Extra-analyses/                          ← archived scripts, not part of pipeline
+├── run_pipeline.py                          ← FULL END TO END PIPELINE ORCHESTRATOR
 ├── .gitignore
 ├── requirements.txt
 └── README.md
 ```
 
-## Recommended Run Order
+## 🚀 Quick Start: End-to-End Execution
+
+The entire pipeline (Data merging → EDA → PCA → XGBoost) can now be run sequentially with a single command via the central orchestrator:
+
+```bash
+# 1. Install dependencies
+pip install -r requirements.txt
+
+# 2. Run the end-to-end pipeline (completes in ~1m 15s)
+python run_pipeline.py
+```
+*Note: Ensure `grifols_data_final.csv` and `grifols_cytokine_data.csv` are present in the `Data/` folder prior to execution.*
+
+---
+
+## Modular Run Order (Manual Step-by-Step)
+If you prefer to run or modify specific stages individually, you can follow the manual run order:
 
 ```
 1. Data/dataprep.py
