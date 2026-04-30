@@ -121,10 +121,18 @@ def main():
         run_step(step)
         
     total_elapsed = time.time() - total_start
-    tmins, tsecs = divmod(int(total_elapsed), 60)
+    total_mins, total_secs = divmod(int(total_elapsed), 60)
     
     # Total time taken for the entire pipeline to run successfully across all components.
-    print_banner(f"PIPELINE COMPLETED SUCCESSFULLY (Total Runtime: {tmins}m {tsecs}s)")
+    # Final success banner displaying completion and output locations
+    print("\n" + "=" * 80)
+    print(f" PIPELINE COMPLETED SUCCESSFULLY (Total Runtime: {total_mins}m {total_secs}s)")
+    print("=" * 80)
+    print("✓ All data generated cleanly without errors.")
+    print("✓ Standardized datasets saved to:    Data/")
+    print("✓ Analysis & Plots successfully exported to the internal 'Outputs/' folders")
+    print("  inside the 'PCA+KNN/' and 'XGBOOST/' directories.")
+    print("=" * 80 + "\n")
 
 if __name__ == "__main__":
     main()
